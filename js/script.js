@@ -34,6 +34,10 @@ var modifiersBar;
 var planetOuter;
 var planetInner;
 
+// Sound
+var musicPlayer;
+var music2player;
+
 // Circles
 var circleRadius = 50;
 var circles = [];
@@ -62,7 +66,8 @@ function gameInit () {
             // {src:"lose.png", id:"lose"},
             // {src:"playerScore.mp3|playerScore.ogg", id:"playerScore"},
             // {src:"enemyScore.mp3|enemyScore.ogg", id:"enemyScore"},
-            // {src:"hit.mp3|hit.ogg", id:"hit"},
+            {src:"SD/TantumLocus_Music1.mp3|TantumLocus_Music1.ogg", id:"music1"},
+            {src:"SD/TantumLocus_Music2.mp3|TantumLocus_Music2.ogg", id:"music2"},
             // {src:"wall.mp3|wall.ogg", id:"wall"}
     ];
 
@@ -82,7 +87,7 @@ function gameInit () {
 
     stage.update();
 
-    createjs.Ticker.setFPS(10);
+    createjs.Ticker.setFPS(1);
     createjs.Ticker.addEventListener("tick", gameTick);
 }
 
@@ -111,7 +116,6 @@ function initUI () {
 	addPlanet(400, 350, "blue", "white", 200, 80);
 
 	stage.update();
-	
 
  //    circle.addEventListener("mousedown", handlePress);
  // function handlePress(event) {
@@ -129,12 +133,17 @@ function initUI () {
  	function handleClick(event) {
      	// Click Happened.
      	gameLoaded = !gameLoaded;
+        if (musicPlayer.isPlaying) {};
+                musicPlayer.stop();
+
      }
  	canvas.addEventListener("click", handleClick);
 
- 	
+ 	createjs.Sound.PL
 
  	var val = 0;
+    var vol = 1.0;
+    var up = true;
     function handleTick() {
      //Circle will move 10 units to the right.
         //circle.x += 10;
@@ -144,7 +153,18 @@ function initUI () {
         val = (val + 1) % 7;
         setBarValue(0, val*10);
         setCounterBarValue(val);
-        setPlanetInner("white", val*50);
+
+        
+        if (vol <= -0.5) {up = false;};
+        if (vol >= 1.5) {up = true;};
+        if (up) {
+            vol -= 0.1 % 1.0;
+        } else {
+            vol += 0.1 % 1.0;
+        };
+        musicPlayer.setVolume(vol);
+        music2player.setVolume(1.0 - vol);
+        // setPlanetInner("white", val*50);
         // barContent.scaleY = val;
         stage.update();
     }
@@ -152,6 +172,12 @@ function initUI () {
     animations.push(handleTick)
 
     gameLoaded = true;
+}
+
+function initSound () {
+    musicPlayer = createjs.Sound.play("music1");
+    music2player = createjs.Sound.play("music2");
+    music2player.setVolume(0.0);
 }
 
 
@@ -166,9 +192,10 @@ function handleProgress(event)
 
 function handleComplete(event) {
 	//triggered when all loading is complete
-	progressLbl.visible = false;
+	stage.removeChild(progressLbl);
 	stage.update();
 	initUI();
+    // initSound();
 }
 
 // Game tick
