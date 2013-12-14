@@ -10,9 +10,13 @@ var assets;
 var animations = [];
 
 // Bars
-var barWidth = 50;
-var barHeight = 200;
+var barWidth = 330;
+var barHeight = 40;
 var bars = [];
+
+// Circles
+var circleRadius = 50;
+var circles = [];
 
 function gameInit () {
 	// Get canvas
@@ -52,37 +56,21 @@ function gameInit () {
     // preloader.onFileLoad = handleFileLoad;
     preloader.loadManifest(assets);
 
-	//Create a Shape DisplayObject.
-    circle = new createjs.Shape();
-    circle.graphics.beginFill("red").drawCircle(0, 0, 40);
 
-    //Set position of Shape instance.
-    circle.x = circle.y = 50;
+    // Place UI Elements
 
-    //Add Shape instance to stage display list.
-    // stage.addChild(circle);
+    // Mass
+    var massBar = addBar(65, 15, "yellow", 0, 100, 5);
 
-    // barBorder = new createjs.Shape();
-    // barBorder.graphics.beginStroke("black").drawRect(0, 0, 50, 200);
+    // Aquatic
+    var aquaBar = addBar(65, 65, "blue", 0, 100, 5);
 
-    // //Set position of Shape instance.
-    // barBorder.x = barBorder.y = 100;
+    // Temperature
+    var tempBar = addBar(455, 15, "red", 0, 100, 5);
 
-    // //Add Shape instance to stage display list.
-    // stage.addChild(barBorder);
+	// Vegetation
+    var vegBar = addBar(455, 65, "green", 0, 100, 5);
 
-    // barContent = new createjs.Shape();
-    // barContent.graphics.beginFill("red").drawRect(0, 0, 48, 198);
-
-    // //Set position of Shape instance.
-    // barContent.x = 101;
-    // barContent.y = 101;
-
-    // //Add Shape instance to stage display list.
-    // stage.addChild(barContent);
-
-    //Update stage will render next frame
-    stage.update();
 
  //    circle.addEventListener("mousedown", handlePress);
  // function handlePress(event) {
@@ -103,9 +91,9 @@ function gameInit () {
      }
  	canvas.addEventListener("click", handleClick);
 
- 	addBar(0, 0, "red", 0, 100, 5);
+ 	
 
- 	var val = barContent.scaleY;
+ 	var val = 0;
     function handleTick() {
      //Circle will move 10 units to the right.
         //circle.x += 10;
@@ -165,35 +153,67 @@ function gameTick () {
 
 // Bars Methods, color is a css compatible color value
 function addBar (x, y, color, value, maxValue, bestValue) {
-	barBorder = new createjs.Shape();
-    barBorder.graphics.beginStroke("black").drawRect(0, 0, barWidth, barHeight);
+	// barBorder = new createjs.Shape();
+ //    barBorder.graphics.beginStroke("black").drawRect(0, 0, barWidth, barHeight);
+
+ //    //Set position of Shape instance.
+ //    barBorder.x = x;
+ //    barBorder.y = y;
+
+ //    //Add Shape instance to stage display list.
+ //    stage.addChild(barBorder);
+
+	// Create bar content
+    var barContent = new createjs.Shape();
+    barContent.graphics.beginFill(color).drawRect(0, 0, barWidth, barHeight);
 
     //Set position of Shape instance.
-    barBorder.x = x;
-    barBorder.y = y;
-
-    //Add Shape instance to stage display list.
-    stage.addChild(barBorder);
-
-    barContent = new createjs.Shape();
-    barContent.graphics.beginFill(color).drawRect(0, 0, barWidth - 2, barHeight - 2);
-
-    //Set position of Shape instance.
-    barContent.x = x + 1;
-    barContent.y = y + 1;
+    barContent.x = x;
+    barContent.y = y;
 
     //Add Shape instance to stage display list.
     stage.addChild(barContent);
 
+    // Add best value
+    var bestValueBar = new createjs.Shape();
+    bestValueBar.graphics.beginFill("black").drawRect(0, 0, 1, barHeight);
+
+    bestValueBar.x = barContent.x + bestValue * (barWidth / maxValue);
+    bestValueBar.y = y;
+
+    stage.addChild(bestValueBar);
+
     //Update stage will render next frame
     stage.update();
 
-    bars.push([barContent, maxValue]);
+    bars.push([barContent, maxValue, bestValueBar]);
+
+    return bars.length - 1;
 }
 
 function setBarValue (index, value) {
-	var newHeight = value * (barHeight / bars[index][1]);
-	bars[index][0].scaleY = newHeight / barHeight;
+	var newWidth = value * (barWidth / bars[index][1]);
+	bars[index][0].scaleX = newWidth / barWidth;
 
 	// TODO animations
+}
+
+// Circles Methods, color is a css compatible color value
+function addCircle (x, y, color, value, maxValue) {
+    var circle = new createjs.Shape();
+    circle.graphics.beginFill(color).drawCircle(0, 0, circleRadius);
+
+    //Set position of Shape instance.
+    circle.x = x;
+    circle.y = y;
+
+    //Add Shape instance to stage display list.
+    stage.addChild(circle);
+
+    //Update stage will render next frame
+    stage.update();
+
+    circles.push([circle, maxValue]);
+
+    return circles.length - 1;
 }
