@@ -321,7 +321,7 @@ function setCounterBarValue (value) {
 }
 
 // Modifiers Bar
-function addModifiersBar (x, y) {
+function addModifiersBar (x, y, modifiersNumber) {
 	if (modifiersBar) {
 		return;
 	};
