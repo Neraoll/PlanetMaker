@@ -14,6 +14,12 @@ var barWidth = 330;
 var barHeight = 40;
 var bars = [];
 
+// Counter Bar
+var counterBarWidth = 190;
+var counterBarHeight = 40;
+var counterCircleRadius = 20;
+var counterBar;
+
 // Circles
 var circleRadius = 50;
 var circles = [];
@@ -163,39 +169,97 @@ function addBar (x, y, color, value, maxValue, bestValue) {
  //    //Add Shape instance to stage display list.
  //    stage.addChild(barBorder);
 
+	// Create container
+ 	var barContainer = new createjs.Container();
+ 	barContainer.x = x;
+    barContainer.y = y;
+
+	// Create bar background
+    var barBackground = new createjs.Shape();
+    barBackground.graphics.beginFill("black").drawRect(0, 0, barWidth, barHeight);
+
+    //Set position of Shape instance.
+    barBackground.x = 0;
+    barBackground.y = 0;
+
+    //Add Shape instance to stage display list.
+    barContainer.addChild(barBackground);
+
 	// Create bar content
     var barContent = new createjs.Shape();
     barContent.graphics.beginFill(color).drawRect(0, 0, barWidth, barHeight);
 
     //Set position of Shape instance.
-    barContent.x = x;
-    barContent.y = y;
+    barContent.x = 0;
+    barContent.y = 0;
 
     //Add Shape instance to stage display list.
-    stage.addChild(barContent);
+    barContainer.addChild(barContent);
 
     // Add best value
     var bestValueBar = new createjs.Shape();
     bestValueBar.graphics.beginFill("black").drawRect(0, 0, 1, barHeight);
 
-    bestValueBar.x = barContent.x + bestValue * (barWidth / maxValue);
-    bestValueBar.y = y;
+    bestValueBar.x = bestValue * (barWidth / maxValue);
+    bestValueBar.y = 0;
 
-    stage.addChild(bestValueBar);
+    barContainer.addChild(bestValueBar);
+
+	// Add container
+    stage.addChild(barContainer);
 
     //Update stage will render next frame
     stage.update();
 
-    bars.push([barContent, maxValue, bestValueBar]);
+    bars.push([barContainer, maxValue]);
 
     return bars.length - 1;
 }
 
 function setBarValue (index, value) {
 	var newWidth = value * (barWidth / bars[index][1]);
-	bars[index][0].scaleX = newWidth / barWidth;
+	bars[index][0].getChildAt(1).scaleX = newWidth / barWidth;
 
 	// TODO animations
+}
+
+function setBarBestValue (index, value) {
+	var newX = value * (barWidth / bars[index][1]);
+	bars[index][0].getChildAt(2).x = bars[index][0].getChildAt(1).x + newX;
+
+	// TODO animations
+}
+
+// Counter Bar
+function addCounterBar (x, y, circleColor, value, maxValue) {
+	if (counterBar) {
+		return;
+	};
+
+	// Create container
+ 	var barContainer = new createjs.Container();
+ 	barContainer.x = x;
+    barContainer.y = y;
+
+	// Create bar background
+    var barBackground = new createjs.Shape();
+    barBackground.graphics.beginFill("black").drawRect(0, 0, counterBarWidth, counterBarHeight);
+
+    // Add circles
+    for (var i = 0; i < maxValue; i++) {
+    	// Create circle
+    	var c = createjs.Shape();
+    	c.graphics.beginFill(circleColor).drawCircle(0, 0, counterCircleRadius);
+
+    	// Add to the container
+
+    };
+
+    //Add Shape instance to stage display list.
+    barContainer.addChild(barBackground);
+
+    // Add to stage
+    stage.addChild(barContainer);
 }
 
 // Circles Methods, color is a css compatible color value
