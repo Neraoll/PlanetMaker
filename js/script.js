@@ -30,6 +30,10 @@ var modifiersBarHeight = 320;
 var modifiersMaxNumber = 5;
 var modifiersBar;
 
+// Planet
+var planetOuter;
+var planetInner;
+
 // Circles
 var circleRadius = 50;
 var circles = [];
@@ -50,7 +54,7 @@ function gameInit () {
             {src:"assets/icon2.png", id:"aqua"},
             {src:"assets/icon3.png", id:"veg"},
             {src:"assets/icon4.png", id:"temp"},
-            // {src:"credits.png", id:"credits"},
+            {src:"assets/element-10.png", id:"modifiers"},
             // {src:"paddle.png", id:"cpu"},
             // {src:"paddle.png", id:"player"},
             // {src:"ball.png", id:"ball"},
@@ -100,6 +104,15 @@ function initUI () {
 	// Add counter bar
 	addCounterBar(595, 115, "blue", 2, 6);
 
+	// Add modifiers bar
+	addModifiersBar(705, 165, modifiersMaxNumber);
+
+	// Add planet
+	addPlanet(400, 350, "blue", "white", 200, 80);
+
+	stage.update();
+	
+
  //    circle.addEventListener("mousedown", handlePress);
  // function handlePress(event) {
  //     // A mouse press happened.
@@ -131,6 +144,7 @@ function initUI () {
         val = (val + 1) % 7;
         setBarValue(0, val*10);
         setCounterBarValue(val);
+        setPlanetInner("white", val*50);
         // barContent.scaleY = val;
         stage.update();
     }
@@ -333,37 +347,80 @@ function addModifiersBar (x, y, modifiersNumber) {
 
 	// Create bar background
     var barBackground = new createjs.Shape();
-    barBackground.graphics.beginStroke("black").drawRect(0, 0, counterBarWidth, counterBarHeight);
-    barBackground.graphics.beginFill("black").drawRect(0, 0, counterBarWidth, counterBarHeight);
+    barBackground.graphics.beginStroke("black").drawRect(0, 0, modifiersBarWidth, modifiersBarHeight);
+    barBackground.graphics.beginFill("black").drawRect(0, 0, modifiersBarWidth, modifiersBarHeight);
 
-    //Add Shape instance to stage display list.
+    // Add Shape instance to stage display list.
     barContainer.addChild(barBackground);
 
-    // Add circles
-    var circleLeftMargin = 20;
-    var circleSpace = 10;
-    var circleX = circleLeftMargin;
-    for (var i = 0; i < maxValue; i++) {
-    	// Create circle
-    	var c = new createjs.Shape();
-    	c.graphics.setStrokeStyle(4).beginStroke(circleColor).drawCircle(0, 0, counterCircleRadius);
+    // Add modifiers
+    var modifiersUpMargin = 20;
+    var modifiersSpace = 10;
+    var modifiersY = modifiersUpMargin;
+    for (var i = 0; i < modifiersNumber; i++) {
+       	// Create bitmap
+        var modifiersBitmap = new createjs.Bitmap(preloader.getResult("modifiers"));
 
-    	c.x = circleX;
-    	c.y = 20;
-    	circleX += (counterCircleRadius * 2) + circleSpace;
-
-    	if (i < value) {
-    		c.graphics.beginFill(circleColor).drawCircle(0, 0, counterCircleRadius);
-    	};
+    	modifiersBitmap.x = 16;
+    	modifiersBitmap.y = modifiersY;
+    	modifiersY += modifiersBitmap.getBounds().height + modifiersSpace;
 
     	// Add to the container
-    	barContainer.addChild(c);
+    	barContainer.addChild(modifiersBitmap);
     };
 
     // Add to stage
     stage.addChild(barContainer);
 
-    modifiersBar = barContainer;
+    modifiersBar = [barContainer, modifiersNumber];
+}
+
+// Planet Methods
+function addPlanet (x, y, outerColor, innerColor, outerRadius, innerRadius) {
+	// // Create container
+ // 	var barContainer = new createjs.Container();
+ // 	barContainer.x = x;
+ //    barContainer.y = y;
+
+	// Create planet outer
+	planetOuter = new createjs.Shape();
+	planetOuter.graphics.beginStroke(outerColor).drawCircle(0, 0, outerRadius);
+	planetOuter.graphics.beginFill(outerColor).drawCircle(0, 0, outerRadius);
+
+	planetOuter.x = x;
+	planetOuter.y = y;
+
+	stage.addChild(planetOuter);
+
+	// Create planet inner
+	planetInner = new createjs.Shape();
+	planetInner.graphics.beginStroke(innerColor).drawCircle(0, 0, innerRadius);
+	planetInner.graphics.beginFill(innerColor).drawCircle(0, 0, innerRadius);
+
+	planetInner.x = x;
+	planetInner.y = y;
+
+	stage.addChild(planetInner);
+}
+
+function setPlanetOuter (outerColor, outerRadius) {
+	if (!planetOuter) {
+		return;
+	};
+
+	planetOuter.graphics.clear();
+	planetOuter.graphics.beginStroke(outerColor).drawCircle(0, 0, outerRadius);
+	planetOuter.graphics.beginFill(outerColor).drawCircle(0, 0, outerRadius);
+}
+
+function setPlanetInner (innerColor, innerRadius) {
+	if (!planetInner) {
+		return;
+	};
+
+	planetInner.graphics.clear();
+	planetInner.graphics.beginStroke(innerColor).drawCircle(0, 0, innerRadius);
+	planetInner.graphics.beginFill(innerColor).drawCircle(0, 0, innerRadius);
 }
 
 // Circles Methods, color is a css compatible color value
