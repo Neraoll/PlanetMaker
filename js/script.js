@@ -1,8 +1,12 @@
 // Main
 var canvas;
 var stage;
+
+// Preload
 var preloader;
+var progressLbl;
 var gameLoaded = false;
+
 
 // Assets
 var assets;
@@ -17,8 +21,14 @@ var bars = [];
 // Counter Bar
 var counterBarWidth = 190;
 var counterBarHeight = 40;
-var counterCircleRadius = 20;
+var counterCircleRadius = 10;
 var counterBar;
+
+// Modifiers Bar
+var modifiersBarWidth = 80;
+var modifiersBarHeight = 320;
+var modifiersMaxNumber = 5;
+var modifiersBar;
 
 // Circles
 var circleRadius = 50;
@@ -36,10 +46,10 @@ function gameInit () {
 
     // Set assets
     assets = [
-            // {src:"bg.png", id:"bg"},
-            // {src:"main.png", id:"main"},
-            // {src:"startB.png", id:"startB"},
-            // {src:"creditsB.png", id:"creditsB"},
+            {src:"assets/icon1.png", id:"mass"},
+            {src:"assets/icon2.png", id:"aqua"},
+            {src:"assets/icon3.png", id:"veg"},
+            {src:"assets/icon4.png", id:"temp"},
             // {src:"credits.png", id:"credits"},
             // {src:"paddle.png", id:"cpu"},
             // {src:"paddle.png", id:"player"},
@@ -52,31 +62,43 @@ function gameInit () {
             // {src:"wall.mp3|wall.ogg", id:"wall"}
     ];
 
-    createjs.Ticker.setFPS(30);
-    createjs.Ticker.addEventListener("tick", gameTick);
+    // Create Progress label
+    progressLbl = new createjs.Text("Loading...","18px Verdana","black");
+    progressLbl.lineWidth = 200;
+    progressLbl.textAlign = "center";
+    progressLbl.x = canvas.width / 2;
+    progressLbl.y = canvas.height / 2;
+    stage.addChild(progressLbl);
 
-    preloader = new createjs.LoadQueue();
+    preloader = new createjs.LoadQueue(false);
     preloader.installPlugin(createjs.Sound);
-    // preloader.onProgress = handleProgress;
-    // preloader.onComplete = handleComplete;
-    // preloader.onFileLoad = handleFileLoad;
+    preloader.addEventListener("complete", handleComplete);
+    preloader.addEventListener("progress", handleProgress);
     preloader.loadManifest(assets);
 
+    stage.update();
 
+    createjs.Ticker.setFPS(10);
+    createjs.Ticker.addEventListener("tick", gameTick);
+}
+
+function initUI () {
     // Place UI Elements
 
     // Mass
-    var massBar = addBar(65, 15, "yellow", 0, 100, 5);
+    var massBar = addBar(15, 15, "yellow", "mass", 0, 100, 5);
 
     // Aquatic
-    var aquaBar = addBar(65, 65, "blue", 0, 100, 5);
+    var aquaBar = addBar(15, 65, "blue", "aqua", 0, 100, 5);
 
     // Temperature
-    var tempBar = addBar(455, 15, "red", 0, 100, 5);
+    var tempBar = addBar(405, 15, "red", "temp", 0, 100, 5);
 
 	// Vegetation
-    var vegBar = addBar(455, 65, "green", 0, 100, 5);
+    var vegBar = addBar(405, 65, "green", "veg", 0, 100, 5);
 
+	// Add counter bar
+	addCounterBar(595, 115, "blue", 2, 6);
 
  //    circle.addEventListener("mousedown", handlePress);
  // function handlePress(event) {
@@ -106,8 +128,9 @@ function gameInit () {
         //Will cause the circle to wrap back
         //if (circle.x > stage.canvas.width) { circle.x = 0; }
 
-        val = (val + 1) % 100;
-        setBarValue(0, val);
+        val = (val + 1) % 7;
+        setBarValue(0, val*10);
+        setCounterBarValue(val);
         // barContent.scaleY = val;
         stage.update();
     }
@@ -122,30 +145,16 @@ function gameInit () {
 function handleProgress(event)
 {
     //use event.loaded to get the percentage of the loading
+	var progresPrecentage = Math.round(preloader.progress * 100);
+    progressLbl.text = progresPrecentage + "%";
+	stage.update();
 }
- 
+
 function handleComplete(event) {
-         //triggered when all loading is complete
-}
- 
-function handleFileLoad(event) {
-         //triggered when an individual file completes loading
-             
-         switch(event.type)
-         {
-            case PreloadJS.IMAGE:
-            //image loaded
-            var img = new Image();
-            img.src = event.src;
-            img.onload = handleLoadComplete;
-            window[event.id] = new Bitmap(img);
-            break;
- 
-            case PreloadJS.SOUND:
-            //sound loaded
-            handleLoadComplete();
-            break;
-         }
+	//triggered when all loading is complete
+	progressLbl.visible = false;
+	stage.update();
+	initUI();
 }
 
 // Game tick
@@ -155,10 +164,12 @@ function gameTick () {
 			animations[i]()
 		};
 	};
+
+	stage.update();
 }
 
 // Bars Methods, color is a css compatible color value
-function addBar (x, y, color, value, maxValue, bestValue) {
+function addBar (x, y, color, iconId, value, maxValue, bestValue) {
 	// barBorder = new createjs.Shape();
  //    barBorder.graphics.beginStroke("black").drawRect(0, 0, barWidth, barHeight);
 
@@ -174,12 +185,17 @@ function addBar (x, y, color, value, maxValue, bestValue) {
  	barContainer.x = x;
     barContainer.y = y;
 
+    // Create Icon
+    var icon = new createjs.Bitmap(preloader.getResult(iconId));
+
+	var barX = icon.getBounds().width + 10;
+
 	// Create bar background
     var barBackground = new createjs.Shape();
     barBackground.graphics.beginFill("black").drawRect(0, 0, barWidth, barHeight);
 
     //Set position of Shape instance.
-    barBackground.x = 0;
+    barBackground.x = barX;
     barBackground.y = 0;
 
     //Add Shape instance to stage display list.
@@ -190,7 +206,7 @@ function addBar (x, y, color, value, maxValue, bestValue) {
     barContent.graphics.beginFill(color).drawRect(0, 0, barWidth, barHeight);
 
     //Set position of Shape instance.
-    barContent.x = 0;
+    barContent.x = barX;
     barContent.y = 0;
 
     //Add Shape instance to stage display list.
@@ -200,10 +216,13 @@ function addBar (x, y, color, value, maxValue, bestValue) {
     var bestValueBar = new createjs.Shape();
     bestValueBar.graphics.beginFill("black").drawRect(0, 0, 1, barHeight);
 
-    bestValueBar.x = bestValue * (barWidth / maxValue);
+    bestValueBar.x = barX + bestValue * (barWidth / maxValue);
     bestValueBar.y = 0;
 
     barContainer.addChild(bestValueBar);
+
+    // Add icon at the end
+    barContainer.addChild(icon);
 
 	// Add container
     stage.addChild(barContainer);
@@ -243,23 +262,108 @@ function addCounterBar (x, y, circleColor, value, maxValue) {
 
 	// Create bar background
     var barBackground = new createjs.Shape();
+    barBackground.graphics.beginStroke("black").drawRect(0, 0, counterBarWidth, counterBarHeight);
     barBackground.graphics.beginFill("black").drawRect(0, 0, counterBarWidth, counterBarHeight);
-
-    // Add circles
-    for (var i = 0; i < maxValue; i++) {
-    	// Create circle
-    	var c = createjs.Shape();
-    	c.graphics.beginFill(circleColor).drawCircle(0, 0, counterCircleRadius);
-
-    	// Add to the container
-
-    };
 
     //Add Shape instance to stage display list.
     barContainer.addChild(barBackground);
 
+    // Add circles
+    var circleLeftMargin = 20;
+    var circleSpace = 10;
+    var circleX = circleLeftMargin;
+    for (var i = 0; i < maxValue; i++) {
+    	// Create circle
+    	var c = new createjs.Shape();
+    	c.graphics.setStrokeStyle(4).beginStroke(circleColor).drawCircle(0, 0, counterCircleRadius);
+
+    	c.x = circleX;
+    	c.y = 20;
+    	circleX += (counterCircleRadius * 2) + circleSpace;
+
+    	if (i < value) {
+    		c.graphics.beginFill(circleColor).drawCircle(0, 0, counterCircleRadius);
+    	};
+
+    	// Add to the container
+    	barContainer.addChild(c);
+    };
+
     // Add to stage
     stage.addChild(barContainer);
+
+    counterBar = [barContainer, maxValue, circleColor];
+}
+
+function setCounterBarValue (value) {
+	if (value != 0) { 
+		value++;
+	};
+	var circleColor = counterBar[2];
+	var circleLeftMargin = 20;
+    var circleSpace = 10;
+    var circleX = circleLeftMargin;
+	for (var i = 1; i < counterBar[1] + 1; i++) {
+    	// Create circle
+    	var c = counterBar[0].getChildAt(i);
+    	c.graphics.clear();
+
+    	c.graphics.setStrokeStyle(4).beginStroke(circleColor).drawCircle(0, 0, counterCircleRadius);
+
+    	c.x = circleX;
+    	c.y = 20;
+    	circleX += (counterCircleRadius * 2) + circleSpace;
+
+    	if (i < value) {
+    		c.graphics.beginFill(circleColor).drawCircle(0, 0, counterCircleRadius);
+    	};
+    };
+}
+
+// Modifiers Bar
+function addModifiersBar (x, y) {
+	if (modifiersBar) {
+		return;
+	};
+
+	// Create container
+ 	var barContainer = new createjs.Container();
+ 	barContainer.x = x;
+    barContainer.y = y;
+
+	// Create bar background
+    var barBackground = new createjs.Shape();
+    barBackground.graphics.beginStroke("black").drawRect(0, 0, counterBarWidth, counterBarHeight);
+    barBackground.graphics.beginFill("black").drawRect(0, 0, counterBarWidth, counterBarHeight);
+
+    //Add Shape instance to stage display list.
+    barContainer.addChild(barBackground);
+
+    // Add circles
+    var circleLeftMargin = 20;
+    var circleSpace = 10;
+    var circleX = circleLeftMargin;
+    for (var i = 0; i < maxValue; i++) {
+    	// Create circle
+    	var c = new createjs.Shape();
+    	c.graphics.setStrokeStyle(4).beginStroke(circleColor).drawCircle(0, 0, counterCircleRadius);
+
+    	c.x = circleX;
+    	c.y = 20;
+    	circleX += (counterCircleRadius * 2) + circleSpace;
+
+    	if (i < value) {
+    		c.graphics.beginFill(circleColor).drawCircle(0, 0, counterCircleRadius);
+    	};
+
+    	// Add to the container
+    	barContainer.addChild(c);
+    };
+
+    // Add to stage
+    stage.addChild(barContainer);
+
+    modifiersBar = barContainer;
 }
 
 // Circles Methods, color is a css compatible color value
