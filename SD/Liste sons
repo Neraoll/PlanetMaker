@@ -1,0 +1,9 @@
+Liste sons :
+- Attraper un modificateur
+- Lâcher un modificateur dans l'atmosphère
+- Lâcher un modificateur dans la planète
+- Nouvelle étoile (= fin d'une sous-partie, affiche score intermédiaire)
+	Plusieurs sons suivants l'importance du score ?
+- Constellation complète (= fin de la partie, affche score final)
+	Peut suivre l'enchainement des sons d'étoiles
+- Arrivée d'une nouvelle planète et race ?
