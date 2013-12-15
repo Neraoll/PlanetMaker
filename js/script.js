@@ -73,6 +73,7 @@ function gameInit () {
             {src:"assets/icon3.png", id:"vege"},
             {src:"assets/icon4.png", id:"temp"},
             {src:"assets/element-10.png", id:"modifiers"},
+            {src:"assets/raceTest.png", id:"raceTest"},
             // {src:"paddle.png", id:"cpu"},
             // {src:"paddle.png", id:"player"},
             // {src:"ball.png", id:"ball"},
@@ -110,18 +111,24 @@ function initUI () {
     var backgroundBitmap = new createjs.Bitmap(preloader.getResult("bg"));
     stage.addChild(backgroundBitmap);
 
-    var bringBgBitmap = new createjs.Bitmap(preloader.getResult("ringBg"));
-    bringBgBitmap.x = 187;
-    bringBgBitmap.y = 219;
-    stage.addChild(bringBgBitmap);
+    var ringBgBitmap = new createjs.Bitmap(preloader.getResult("ringBg"));
+    ringBgBitmap.x = 187;
+    ringBgBitmap.y = 219;
+    stage.addChild(ringBgBitmap);
 
     // Add planet
     addPlanet(400, 330, planetColor, atmoColor, 140, 80);
 
-    var bringFgBitmap = new createjs.Bitmap(preloader.getResult("ringFg"));
-    bringFgBitmap.x = 188;
-    bringFgBitmap.y = 221;
-    stage.addChild(bringFgBitmap);
+    var ringFgBitmap = new createjs.Bitmap(preloader.getResult("ringFg"));
+    ringFgBitmap.x = 188;
+    ringFgBitmap.y = 221;
+    stage.addChild(ringFgBitmap);
+
+    // Add Race Test
+    var raceTestBitmap = new createjs.Bitmap(preloader.getResult("raceTest"));
+    raceTestBitmap.x = 15;
+    raceTestBitmap.y = 380;
+    stage.addChild(raceTestBitmap);
 
     // Place UI Elements
 
