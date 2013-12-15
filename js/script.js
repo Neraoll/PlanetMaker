@@ -37,7 +37,7 @@ var counterBar;
 
 // Modifiers Bar
 var modifiersBarWidth = 80;
-var modifiersBarHeight = 320;
+var modifiersBarHeight = 262;
 var modifiersMaxNumber = 5;
 var modifiersBtns = [];
 var modifiersBar;
