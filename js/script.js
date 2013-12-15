@@ -69,6 +69,9 @@ var modifiers;
 var score;
 var scoreLbl;
 
+// Game state
+var waitingForRestart = false;
+
 function gameInit () {
 	// Get canvas
 	canvas = document.getElementById("gameCanvas");
@@ -159,11 +162,12 @@ function lineDistance( point1, point2 )
 }
 
 function fireScore () {
+    waitingForRestart = true;
     planetContainer.visible = false;
 
     if (!scoreLbl) {
         // Create Progress label
-        scoreLbl = new createjs.Text(score + "%", "30px Verdana", "white");
+        scoreLbl = new createjs.Text(score + "%", "100px Verdana", "white");
         scoreLbl.textAlign = "center";
         scoreLbl.x = canvas.width / 2;
         scoreLbl.y = canvas.height / 2;
@@ -224,23 +228,35 @@ function dropModifier (place, modifier) {
     needUpdate = true;
 }
 
+function restartGame () {
+    // Mass
+    setBarValue(0, planet.startValue.mass);
+    
+    // Aquatic
+    setBarValue(1, planet.startValue.aqua);
+
+    // Temperature
+    setBarValue(2, planet.startValue.temp);
+
+    // Vegetation
+    setBarValue(3, planet.startValue.vege);
+
+    // Add counter bar
+    setCounterBarValue(0);
+
+    scoreLbl.visible = false;
+    planetContainer.visible = true;
+
+    needUpdate = true;
+}
+
 function initUI () {
     // Add background
     var backgroundBitmap = new createjs.Bitmap(preloader.getResult("bg"));
     stage.addChild(backgroundBitmap);
 
-    var ringBgBitmap = new createjs.Bitmap(preloader.getResult("ringBg"));
-    ringBgBitmap.x = 187;
-    ringBgBitmap.y = 219;
-    stage.addChild(ringBgBitmap);
-
     // Add planet
     addPlanet(400, 330, planetColor, atmoColor, 140, 80);
-
-    var ringFgBitmap = new createjs.Bitmap(preloader.getResult("ringFg"));
-    ringFgBitmap.x = 188;
-    ringFgBitmap.y = 221;
-    stage.addChild(ringFgBitmap);
 
     addRace();
 
@@ -288,6 +304,11 @@ function initUI () {
  	// canvas.addEventListener("click", handleClick);
     // End drag
     function handleUp (argument) {
+        if (waitingForRestart) {
+            waitingForRestart = false;
+            restartGame();
+            return;
+        };
         if (dragedModifier) {
             // Detect collision
             // Fix detection (change for center pos)
@@ -662,11 +683,17 @@ function addModifiersBar (x, y, modifiersNumber) {
 
 // Planet Methods
 function addPlanet (x, y, outerColor, innerColor, outerRadius, innerRadius) {
-	// // Create container
+	// Create container
  	planetContainer = new createjs.Container();
  	planetContainer.x = 0;
     planetContainer.y = 0;
     planetContainer.setBounds(0,0,stage.getBounds().width,stage.getBounds().height);
+
+    // Add background ring
+    var ringBgBitmap = new createjs.Bitmap(preloader.getResult("ringBg"));
+    ringBgBitmap.x = 187;
+    ringBgBitmap.y = 219;
+    planetContainer.addChild(ringBgBitmap);
 
 	// Create planet outer
 	planetOuter = new createjs.Shape();
@@ -692,6 +719,12 @@ function addPlanet (x, y, outerColor, innerColor, outerRadius, innerRadius) {
     planetInnerValue = innerRadius;
 
 	planetContainer.addChild(planetInner);
+
+    // Add foreground ring
+    var ringFgBitmap = new createjs.Bitmap(preloader.getResult("ringFg"));
+    ringFgBitmap.x = 188;
+    ringFgBitmap.y = 221;
+    planetContainer.addChild(ringFgBitmap);
 
     stage.addChild(planetContainer);
 }
