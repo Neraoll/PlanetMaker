@@ -13,6 +13,16 @@ var assets;
 
 var animations = [];
 
+// Colors
+var bgUiColor = "#EDEDED";
+var massColor = "#D8C46C";
+var tempColor = "#E27493";
+var aquaColor = "#4AA5D3";
+var vegeColor = "#33CC8E";
+var counterColor = "#588293";
+var planetColor = "#EDEDED";
+var atmoColor = "#EDEDED";
+
 // Bars
 var barWidth = 330;
 var barHeight = 40;
@@ -54,6 +64,7 @@ function gameInit () {
 
     // Set assets
     assets = [
+            {src:"assets/fond.png", id:"bg"},
             {src:"assets/icon1.png", id:"mass"},
             {src:"assets/icon2.png", id:"aqua"},
             {src:"assets/icon3.png", id:"veg"},
@@ -92,28 +103,33 @@ function gameInit () {
 }
 
 function initUI () {
+    // Add background
+
+    var backgroundBitmap = new createjs.Bitmap(preloader.getResult("bg"));
+    stage.addChild(backgroundBitmap);
+
     // Place UI Elements
 
     // Mass
-    var massBar = addBar(15, 15, "yellow", "mass", 0, 100, 5);
+    var massBar = addBar(15, 15, massColor, "mass", 0, 100, 5);
 
     // Aquatic
-    var aquaBar = addBar(15, 65, "blue", "aqua", 0, 100, 5);
+    var aquaBar = addBar(15, 65, aquaColor, "aqua", 0, 100, 5);
 
     // Temperature
-    var tempBar = addBar(405, 15, "red", "temp", 0, 100, 5);
+    var tempBar = addBar(405, 15, tempColor, "temp", 0, 100, 5);
 
 	// Vegetation
-    var vegBar = addBar(405, 65, "green", "veg", 0, 100, 5);
+    var vegBar = addBar(405, 65, vegeColor, "veg", 0, 100, 5);
 
 	// Add counter bar
-	addCounterBar(595, 115, "blue", 2, 6);
+	addCounterBar(595, 115, counterColor, 2, 6);
 
 	// Add modifiers bar
 	addModifiersBar(705, 165, modifiersMaxNumber);
 
 	// Add planet
-	addPlanet(400, 350, "blue", "white", 200, 80);
+	addPlanet(400, 330, planetColor, atmoColor, 200, 80);
 
 	stage.update();
 
@@ -233,7 +249,7 @@ function addBar (x, y, color, iconId, value, maxValue, bestValue) {
 
 	// Create bar background
     var barBackground = new createjs.Shape();
-    barBackground.graphics.beginFill("black").drawRect(0, 0, barWidth, barHeight);
+    barBackground.graphics.beginFill(bgUiColor).drawRect(0, 0, barWidth, barHeight);
 
     //Set position of Shape instance.
     barBackground.x = barX;
@@ -255,7 +271,7 @@ function addBar (x, y, color, iconId, value, maxValue, bestValue) {
 
     // Add best value
     var bestValueBar = new createjs.Shape();
-    bestValueBar.graphics.beginFill("black").drawRect(0, 0, 1, barHeight);
+    bestValueBar.graphics.beginFill("black").drawRect(0, 0, 3, barHeight);
 
     bestValueBar.x = barX + bestValue * (barWidth / maxValue);
     bestValueBar.y = 0;
@@ -303,8 +319,8 @@ function addCounterBar (x, y, circleColor, value, maxValue) {
 
 	// Create bar background
     var barBackground = new createjs.Shape();
-    barBackground.graphics.beginStroke("black").drawRect(0, 0, counterBarWidth, counterBarHeight);
-    barBackground.graphics.beginFill("black").drawRect(0, 0, counterBarWidth, counterBarHeight);
+    //barBackground.graphics.beginStroke(bgUiColor).drawRect(0, 0, counterBarWidth, counterBarHeight);
+    barBackground.graphics.beginFill(bgUiColor).drawRect(0, 0, counterBarWidth, counterBarHeight);
 
     //Add Shape instance to stage display list.
     barContainer.addChild(barBackground);
@@ -374,8 +390,8 @@ function addModifiersBar (x, y, modifiersNumber) {
 
 	// Create bar background
     var barBackground = new createjs.Shape();
-    barBackground.graphics.beginStroke("black").drawRect(0, 0, modifiersBarWidth, modifiersBarHeight);
-    barBackground.graphics.beginFill("black").drawRect(0, 0, modifiersBarWidth, modifiersBarHeight);
+    //barBackground.graphics.beginStroke("black").drawRect(0, 0, modifiersBarWidth, modifiersBarHeight);
+    barBackground.graphics.beginFill(bgUiColor).drawRect(0, 0, modifiersBarWidth, modifiersBarHeight);
 
     // Add Shape instance to stage display list.
     barContainer.addChild(barBackground);
@@ -416,6 +432,7 @@ function addPlanet (x, y, outerColor, innerColor, outerRadius, innerRadius) {
 
 	planetOuter.x = x;
 	planetOuter.y = y;
+    planetOuter.alpha = 0.5;
 
 	stage.addChild(planetOuter);
 
