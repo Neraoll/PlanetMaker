@@ -353,15 +353,7 @@ function addRace(){
     raceTestBitmap.y = 380;
     stage.addChild(raceTestBitmap);
 
-    // Create Name Race label
-    var rName = "";
-    rand = 2 + Math.floor(Math.random()*2); 
-    for(var i=0 ; i < rand ; i++){
-        var rand2 = Math.floor(Math.random()*raceData.length);
-        rName += raceData[rand2];
-    }
-
-    rName = rName.charAt(0).toUpperCase() + rName.slice(1);
+    rName = generateName(raceData, 2);
 
     raceName = new createjs.Text(rName,"15px Verdana",bgUiColor);
     raceName.lineWidth = 110;
@@ -369,6 +361,18 @@ function addRace(){
     raceName.x = 70;
     raceName.y = 360;
     stage.addChild(raceName);
+}
+
+function generateName(tData, minChar){
+    // Create Name Race label
+    var rName = "";
+    rand = minChar + Math.floor(Math.random()*2); 
+    for(var i=0 ; i < rand ; i++){
+        var rand2 = Math.floor(Math.random()*tData.length);
+        rName += tData[rand2];
+    }
+
+    return rName.charAt(0).toUpperCase() + rName.slice(1);
 }
 
 function initSound () {
@@ -692,6 +696,16 @@ function addPlanet (x, y, outerColor, innerColor, outerRadius, innerRadius) {
     planetInnerValue = innerRadius;
 
 	planetContainer.addChild(planetInner);
+
+
+    pName = generateName(planetData, 2);
+
+    planetName = new createjs.Text(pName,"15px Verdana",bgUiColor);
+    planetName.lineWidth = 110;
+    planetName.textAlign = "center";
+    planetName.x = 400;
+    planetName.y = 500;
+    planetContainer.addChild(planetName);
 
     stage.addChild(planetContainer);
 }
