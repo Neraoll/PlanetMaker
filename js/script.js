@@ -170,8 +170,8 @@ function lineDistance( point1, point2 )
 
 function fireScore () {
     waitingForRestart = true;
-    planetContainer.visible = false;
-    planetContainer.alpha = 1.0;
+    // planetContainer.visible = false;
+    // planetContainer.alpha = 1.0;
 
     if (!scoreLbl) {
         // Create Progress label
@@ -180,9 +180,16 @@ function fireScore () {
         scoreLbl.x = canvas.width / 2;
         scoreLbl.y = canvas.height / 2;
         stage.addChild(scoreLbl);
+        scoreLbl.alpha = 0.0;
     } else {
-        scoreLbl.visible = true
+        scoreLbl.visible = true;
+        scoreLbl.alpha = 0.0;
     };
+
+    animations.push(animationWith(function alpha () {
+            planetContainer.alpha -= 0.06;
+            scoreLbl.alpha += 0.06;
+        }, 1.0 / 0.06));
 
     needUpdate = true;
 }
@@ -199,9 +206,6 @@ function computeScore () {
         score /= 4;
         score = Math.ceil(score);
 
-        animations.push(animationWith(function alpha () {
-            planetContainer.alpha -= 0.06;
-        }, 1.0 / 0.06));
         setTimeout(fireScore, 1000);
 }
 
@@ -247,7 +251,7 @@ function dropModifier (place, modifier) {
     if (value > 0) {
         for (var key in linkdata.up) {
             var newVal = linkdata.up[key] * valueMultiplier;
-            console.log(barId + " " + valueMultiplier + " up " + key);
+            // console.log(barId + " " + valueMultiplier + " up " + key);
             var barIdx = barIndexForId(key);
 
             setBarValue(barIdx, bars[barIdx][2] + newVal);
@@ -255,7 +259,7 @@ function dropModifier (place, modifier) {
     } else {
         for (var key in linkdata.down) {
             var newVal = linkdata.down[key] * valueMultiplier;
-            console.log(barId + " " + newVal + " down " + key);
+            // console.log(barId + " " + newVal + " down " + key);
             var barIdx = barIndexForId(key);
 
             setBarValue(barIdx, bars[barIdx][2] + newVal);
@@ -285,7 +289,9 @@ function restartGame () {
     setCounterBarValue(0);
 
     scoreLbl.visible = false;
+    scoreLbl.alpha = 1.0;
     planetContainer.visible = true;
+    planetContainer.alpha = 1.0;
 
     score = null;
 
@@ -403,7 +409,7 @@ function initUI () {
         stage.update();
     }
 
-    animations.push({handler: handleTick, count: 5});
+    // animations.push({handler: handleTick, count: 5});
 
     setPlanetState();
 
@@ -711,6 +717,8 @@ function addModifiersBar (x, y, modifiersNumber) {
 
         // modifiersBitmap.addEventListener("mousemove", handleMove);
         function handleMove(evt) {
+            if (waitingForRestart) {return;};
+
             if (!dragedModifier) {
                 var modifierIdx = modifiersBtns.indexOf(evt.target);
 
