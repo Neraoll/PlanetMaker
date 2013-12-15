@@ -149,6 +149,7 @@ function initData () {
     planet = gameData.planet;
     race = gameData.race;
     modifiers = gameData.modifiers;
+    links
     // console.log(gameData);
 }
 
@@ -169,6 +170,7 @@ function lineDistance( point1, point2 )
 function fireScore () {
     waitingForRestart = true;
     planetContainer.visible = false;
+    planetContainer.alpha = 1.0;
 
     if (!scoreLbl) {
         // Create Progress label
