@@ -73,6 +73,7 @@ function gameInit () {
             {src:"assets/icon3.png", id:"vege"},
             {src:"assets/icon4.png", id:"temp"},
             {src:"assets/element-10.png", id:"modifiers"},
+            {src:"js/data.json", id:"datas"},
             // {src:"paddle.png", id:"cpu"},
             // {src:"paddle.png", id:"player"},
             // {src:"ball.png", id:"ball"},
@@ -165,8 +166,9 @@ function initUI () {
 
     }
  	// canvas.addEventListener("click", handleClick);
-
- 	createjs.Sound.PL
+    // End drag
+    // canvas.addEventListener("mouseup", handleUp);
+console.log(preloader.getResult("datas"));
 
  	var val = 0;
     var vol = 1.0;
@@ -456,7 +458,6 @@ function addModifiersBar (x, y, modifiersNumber) {
             console.log("up");
         }
         modifiersBitmap.addEventListener("pressmove", handleMove);
-        modifiersBitmap.addEventListener("mouseup", handleUp);
     };
 
     createjs.Touch.enable(stage);
