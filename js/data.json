@@ -103,19 +103,19 @@
 			},
 			{
 				"value": 10,
-				"link": 5,
+				"link": 3,
 				"atmo": "vege",
 				"crust": "aqua"
 			},
 			{
 				"value": 25,
-				"link": 5,
+				"link": 10,
 				"atmo": "mass",
 				"crust": "temp"
 			},
 			{
 				"value": -12,
-				"link": 5,
+				"link": 8,
 				"atmo": "temp",
 				"crust": "mass"
 			}

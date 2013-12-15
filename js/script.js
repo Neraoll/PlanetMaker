@@ -189,7 +189,11 @@ function computeScore () {
         };
         score /= 4;
         score = Math.ceil(score);
-        setTimeout(fireScore, 2000);
+
+        animations.push(animationWith(function alpha () {
+            planetContainer.alpha -= 0.06;
+        }, 1.0 / 0.06));
+        setTimeout(fireScore, 1000);
     };
 }
 
@@ -246,6 +250,8 @@ function restartGame () {
 
     scoreLbl.visible = false;
     planetContainer.visible = true;
+
+    score = null;
 
     needUpdate = true;
 }
@@ -364,6 +370,10 @@ function initUI () {
     animations.push({handler: handleTick, count: 5});
 
     gameLoaded = true;
+}
+
+function animationWith (handler, count) {
+    return {handler: handler, count: count};
 }
 
 function addRace(){
