@@ -62,7 +62,7 @@ var planetInnerGreenValue;
 
 // Sound
 var musicPlayer;
-var music2player;
+var soundPlayer;
 
 // Circles
 var circleRadius = 50;
@@ -122,8 +122,14 @@ function gameInit () {
             // {src:"lose.png", id:"lose"},
             // {src:"playerScore.mp3|playerScore.ogg", id:"playerScore"},
             // {src:"enemyScore.mp3|enemyScore.ogg", id:"enemyScore"},
-            {src:"SD/TantumLocus_Music1.mp3|TantumLocus_Music1.ogg", id:"music1"},
-            {src:"SD/TantumLocus_Music2.mp3|TantumLocus_Music2.ogg", id:"music2"},
+            {src:"SD/TantumLocus_Music_Menu.mp3|SD/TantumLocus_Music_Menu.ogg", id:"musicMenu"},
+            {src:"SD/TantumLocus_Music1.mp3|SD/TantumLocus_Music1.ogg", id:"music1"},
+            {src:"SD/TantumLocus_Music2.mp3|SD/TantumLocus_Music2.ogg", id:"music2"},
+            {src:"SD/TantumLocus_Music3.mp3|SD/TantumLocus_Music3.ogg", id:"music3"},
+            {src:"SD/Tic1.mp3|SD/Tic1.ogg", id:"tic1"},
+            {src:"SD/Tic2.mp3|SD/Tic2.ogg", id:"tic2"},
+            {src:"SD/Score_Neg.mp3|SD/Score_Neg.ogg", id:"scoreNeg"},
+            {src:"SD/Score_Pos.mp3|SD/Score_Pos.ogg", id:"scorePos"},
             // {src:"wall.mp3|wall.ogg", id:"wall"}
     ];
 
@@ -211,6 +217,12 @@ function computeScore () {
         score /= 4;
         score = Math.ceil(score);
 
+    // Play music
+    if (score > 0) {
+        playMusic("scorePos",false);
+    } else {
+        playMusic("scoreNeg",false);
+    };
         setTimeout(fireScore, 1000);
 }
 
@@ -273,6 +285,9 @@ function dropModifier (place, modifier) {
 
     // Remove one chance
     setCounterBarValue(counterBarValue + 1);
+
+    // Plays sound
+    playSound("tic2");
 
     needUpdate = true;
 }
@@ -473,9 +488,11 @@ function generateName(tData, minChar){
 }
 
 function initSound () {
-    musicPlayer = createjs.Sound.play("music1");
-    music2player = createjs.Sound.play("music2");
-    music2player.setVolume(0.0);
+    playMusic("musicMenu", true);
+
+    // musicPlayer = createjs.Sound.play("music1");
+    // music2player = createjs.Sound.play("music2");
+    // music2player.setVolume(0.0);
 }
 
 // Peload Methods
@@ -493,7 +510,7 @@ function handleComplete(event) {
 	stage.update();
     initData();
 	initUI();
-    // initSound();
+    initSound();
 }
 
 // Game tick
@@ -748,6 +765,9 @@ function addModifiersBar (x, y, modifiersNumber) {
                 dragedModifier = new createjs.Bitmap(preloader.getResult("modifier" + modifierIdx));
                 dragedModifier = {sprite:dragedModifier, idx:modifierIdx};
                 stage.addChild(dragedModifier.sprite);
+
+                // Play sound
+                playSound("tic1");
             };
 
             dragedModifier.sprite.x = evt.stageX - (dragedModifier.sprite.getBounds().height / 2);
@@ -922,4 +942,35 @@ function addCircle (x, y, color, value, maxValue) {
     circles.push([circle, maxValue]);
 
     return circles.length - 1;
+}
+
+// Musics/Sound
+function playMusic (name, loop) {
+    if (musicPlayer) {
+        musicPlayer.stop();
+    };
+
+    musicPlayer = createjs.Sound.play(name);
+    if (loop) {
+        function playAgain(event) {
+           musicPlayer.play();
+        }
+        musicPlayer.addEventListener("complete", playAgain);
+    };
+
+    musicPlayer.setVolume(0.2);
+}
+
+function playSound (name) {
+    if (soundPlayer) {
+        soundPlayer.stop();
+    };
+
+    soundPlayer = createjs.Sound.play(name);
+    soundPlayer.setVolume(1.0);
+}
+
+function playGameMusic () {
+    var rand = Math.floor(Math.random()*3) + 1;
+    playMusic("music" + rand,true);
 }
