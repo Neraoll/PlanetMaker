@@ -160,11 +160,11 @@ function initUI () {
         console.log(event);
      	// Click Happened.
      	gameLoaded = !gameLoaded;
-        if (musicPlayer.isPlaying) {};
-                musicPlayer.stop();
+        // if (musicPlayer.isPlaying) {};
+                // musicPlayer.stop();
 
     }
- 	canvas.addEventListener("click", handleClick);
+ 	// canvas.addEventListener("click", handleClick);
 
  	createjs.Sound.PL
 
@@ -242,8 +242,11 @@ function gameTick () {
             animations.splice(toRemove[i],1);
         };
 
-        needUpdate = (len > 0);
+        if (len > 0) {
+            needUpdate = true;
+        };
 	};
+
 
     if (needUpdate) {
         stage.update();
@@ -442,13 +445,17 @@ function addModifiersBar (x, y, modifiersNumber) {
 
         // modifiersBitmap.addEventListener("mousemove", handleMove);
         modifiersBitmap.addEventListener("pressmove", handleMove);
+        modifiersBitmap.addEventListener("mouseup", handleUp);
         function handleMove(evt) {
             evt.target.x = evt.stageX;
             evt.target.y = evt.stageY;
 
             needUpdate = true;
+
             // Check out the DragAndDrop example in GitHub for more
-            // console.log(event);
+        }
+        function handleUp (evt) {
+            console.log("up");
         }
     };
 
