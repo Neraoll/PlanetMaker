@@ -73,7 +73,9 @@ function gameInit () {
             {src:"assets/icon3.png", id:"vege"},
             {src:"assets/icon4.png", id:"temp"},
             {src:"assets/element-10.png", id:"modifiers"},
-            {src:"assets/raceTest.png", id:"raceTest"},
+            {src:"assets/raceTest-0.png", id:"raceTest0"},
+            {src:"assets/raceTest-1.png", id:"raceTest1"},
+            {src:"assets/raceTest-2.png", id:"raceTest2"},
             {src:"js/data.json", id:"datas"},
             // {src:"paddle.png", id:"cpu"},
             // {src:"paddle.png", id:"player"},
@@ -126,7 +128,8 @@ function initUI () {
     stage.addChild(ringFgBitmap);
 
     // Add Race Test
-    var raceTestBitmap = new createjs.Bitmap(preloader.getResult("raceTest"));
+    var rand = Math.floor(Math.random()*3); 
+    var raceTestBitmap = new createjs.Bitmap(preloader.getResult("raceTest"+rand));
     raceTestBitmap.x = 15;
     raceTestBitmap.y = 380;
     stage.addChild(raceTestBitmap);
