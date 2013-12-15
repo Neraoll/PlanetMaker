@@ -19,9 +19,10 @@ var massColor = "#D8C46C";
 var tempColor = "#E27493";
 var aquaColor = "#4AA5D3";
 var vegeColor = "#33CC8E";
+var brunColor = "#E8D0AA";
 var counterColor = "#588293";
 var planetColor = "#EDEDED";
-var atmoColor = "#EDEDED";
+var atmoColor = "#rgba(237, 237, 237, 0.5)";
 
 // Bars
 var barWidth = 330;
@@ -49,6 +50,10 @@ var planetOuter;
 var planetInner;
 var planetInnerValue;
 var planetOuterValue;
+var planetInnerBrun;
+var planetInnerGreen;
+var planetInnerBrunValue;
+var planetInnerGreenValue;
 
 // Sound
 var musicPlayer;
@@ -225,6 +230,7 @@ function dropModifier (place, modifier) {
     };
 
     setBarValue(index, bars[index][2] + value);
+    setPlanetState();
 
     // Remove one chance
     setCounterBarValue(counterBarValue + 1);
@@ -262,7 +268,7 @@ function initUI () {
     stage.addChild(backgroundBitmap);
 
     // Add planet
-    addPlanet(400, 330, planetColor, atmoColor, 140, 80);
+    addPlanet(400, 330, planetColor, atmoColor, 150, 80);
 
     addRace();
 
@@ -368,6 +374,8 @@ function initUI () {
     }
 
     animations.push({handler: handleTick, count: 5});
+
+    setPlanetState();
 
     gameLoaded = true;
 }
@@ -734,6 +742,30 @@ function addPlanet (x, y, outerColor, innerColor, outerRadius, innerRadius) {
 
 	planetContainer.addChild(planetInner);
 
+    // Create planet innerBrun
+    planetInnerBrun = new createjs.Shape();
+    planetInnerBrun.graphics.beginStroke(innerColor).drawCircle(0, 0, innerRadius);
+    planetInnerBrun.graphics.beginFill(innerColor).drawCircle(0, 0, innerRadius);
+
+    planetInnerBrun.x = x;
+    planetInnerBrun.y = y;
+
+    planetInnerBrunValue = innerRadius;
+
+    planetContainer.addChild(planetInnerBrun);
+
+    // Create planet innerGreen
+    planetInnerGreen = new createjs.Shape();
+    planetInnerGreen.graphics.beginStroke(innerColor).drawCircle(0, 0, innerRadius);
+    planetInnerGreen.graphics.beginFill(innerColor).drawCircle(0, 0, innerRadius);
+
+    planetInnerGreen.x = x;
+    planetInnerGreen.y = y;
+
+    planetInnerGreenValue = innerRadius;
+
+    planetContainer.addChild(planetInnerGreen);
+
     // Add foreground ring
     var ringFgBitmap = new createjs.Bitmap(preloader.getResult("ringFg"));
     ringFgBitmap.x = 188;
@@ -750,6 +782,17 @@ function addPlanet (x, y, outerColor, innerColor, outerRadius, innerRadius) {
     planetContainer.addChild(planetName);
 
     stage.addChild(planetContainer);
+}
+
+function setPlanetState () {
+    var blueRadius = 50 + (75 * bars[0][2] / 100);
+    setPlanetInner(aquaColor, blueRadius);
+
+    var brunRadius = blueRadius * bars[1][2] / 100;
+    setPlanetInnerBrun(brunColor, brunRadius);
+
+    var greenRadius = brunRadius * bars[3][2] / 100;
+    setPlanetInnerGreen(vegeColor, greenRadius);
 }
 
 function setPlanetOuter (outerColor, outerRadius) {
@@ -772,6 +815,28 @@ function setPlanetInner (innerColor, innerRadius) {
 	planetInner.graphics.beginStroke(innerColor).drawCircle(0, 0, innerRadius);
 	planetInner.graphics.beginFill(innerColor).drawCircle(0, 0, innerRadius);
     planetInnerValue = innerRadius;
+}
+
+function setPlanetInnerBrun (innerColor, innerRadius) {
+    if (!planetInnerBrun) {
+        return;
+    };
+
+    planetInnerBrun.graphics.clear();
+    planetInnerBrun.graphics.beginStroke(innerColor).drawCircle(0, 0, innerRadius);
+    planetInnerBrun.graphics.beginFill(innerColor).drawCircle(0, 0, innerRadius);
+    planetInnerBrunValue = innerRadius;
+}
+
+function setPlanetInnerGreen (innerColor, innerRadius) {
+    if (!planetInnerGreen) {
+        return;
+    };
+
+    planetInnerGreen.graphics.clear();
+    planetInnerGreen.graphics.beginStroke(innerColor).drawCircle(0, 0, innerRadius);
+    planetInnerGreen.graphics.beginFill(innerColor).drawCircle(0, 0, innerRadius);
+    planetInnerGreenValue = innerRadius;
 }
 
 // Circles Methods, color is a css compatible color value
