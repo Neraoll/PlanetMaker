@@ -32,6 +32,7 @@ var bars = [];
 var counterBarWidth = 190;
 var counterBarHeight = 40;
 var counterCircleRadius = 10;
+var counterBarValue;
 var counterBar;
 
 // Modifiers Bar
@@ -148,6 +149,39 @@ function lineDistance( point1, point2 )
     return Math.sqrt( xs + ys );
 }
 
+function dropModifier (place, modifier) {
+    if (counterBarValue <= 0) {
+        return;
+    };
+
+    // Remove one chance
+    setCounterBarValue(counterBarValue - 1);
+    var value = 0;
+    var barId = "";
+    if (place == planetInner) {
+        // Planet
+        value = modifiers[modifier.idx].value;
+        barId = modifiers[modifier.idx].crust;
+    } else if (place == planetOuter) {
+        // Atmosphere
+        value = modifiers[modifier.idx].value;
+        barId = modifiers[modifier.idx].atmo;
+    };
+
+    if (barId == "mass") {
+        index = 0;
+    } else if (barId == "aqua") {
+        index = 1;
+    } else if (barId == "temp") {
+        index = 2;
+    } else if (barId == "vege") {
+        index = 3;
+    };
+
+    setBarValue(index, bars[index][2] + value);
+    needUpdate = true;
+}
+
 function initUI () {
     // Add background
     var backgroundBitmap = new createjs.Bitmap(preloader.getResult("bg"));
@@ -220,19 +254,20 @@ function initUI () {
         if (dragedModifier) {
             // Detect collision
             // Fix detection (change for center pos)
-            dragedModifier.x += (dragedModifier.getBounds().height / 2);
-            dragedModifier.y += (dragedModifier.getBounds().height / 2);
+            dragedModifier.sprite.x += (dragedModifier.sprite.getBounds().height / 2);
+            dragedModifier.sprite.y += (dragedModifier.sprite.getBounds().height / 2);
             // Planet
-            if (lineDistance(dragedModifier, planetInner) < planetInnerValue) {
-                console.log("inner");
+            if (lineDistance(dragedModifier.sprite, planetInner) < planetInnerValue) {
+                // console.log("inner");
+                dropModifier(planetInner, dragedModifier);
             }
             // Atmosphere
-            else if (lineDistance(dragedModifier, planetOuter) < planetOuterValue) {
-                console.log("outer");
+            else if (lineDistance(dragedModifier.sprite, planetOuter) < planetOuterValue) {
+                dropModifier(planetOuter, dragedModifier);
             };
 
             // Remove modifier
-            stage.removeChild(dragedModifier);
+            stage.removeChild(dragedModifier.sprite);
             dragedModifier = null;
 
             needUpdate = true;
@@ -252,7 +287,6 @@ function initUI () {
 
         val = (val + 1) % 7;
         // setBarValue(0, val*10);
-        setCounterBarValue(val);
 
         
         if (vol <= -0.5) {up = false;};
@@ -394,15 +428,17 @@ function addBar (x, y, color, iconId, value, maxValue, bestValue) {
     //Update stage will render next frame
     needUpdate = true;
 
-    bars.push([barContainer, maxValue]);
+    bars.push([barContainer, maxValue, value]);
 
     return bars.length - 1;
 }
 
 function setBarValue (index, value) {
+    if (value < 0) { value = 0; };
+    if (value > bars[index][1]) { value = bars[index][1]; };
 	var newWidth = value * (barWidth / bars[index][1]);
 	bars[index][0].getChildAt(1).scaleX = newWidth / barWidth;
-
+    bars[index][2] = value;
 	// TODO animations
 }
 
@@ -456,6 +492,8 @@ function addCounterBar (x, y, circleColor, value, maxValue) {
     // Add to stage
     stage.addChild(barContainer);
 
+    counterBarValue = value;
+
     counterBar = [barContainer, maxValue, circleColor];
 }
 
@@ -482,6 +520,8 @@ function setCounterBarValue (value) {
     		c.graphics.beginFill(circleColor).drawCircle(0, 0, counterCircleRadius);
     	};
     };
+
+    counterBarValue = value;
 }
 
 // Modifiers Bar
@@ -534,11 +574,12 @@ function addModifiersBar (x, y, modifiersNumber) {
 
                 // Duplicate object
                 dragedModifier = new createjs.Bitmap(preloader.getResult("modifier" + modifierIdx));
-                stage.addChild(dragedModifier);
+                dragedModifier = {sprite:dragedModifier, idx:modifierIdx};
+                stage.addChild(dragedModifier.sprite);
             };
 
-            dragedModifier.x = evt.stageX - (dragedModifier.getBounds().height / 2);
-            dragedModifier.y = evt.stageY - (dragedModifier.getBounds().width / 2);
+            dragedModifier.sprite.x = evt.stageX - (dragedModifier.sprite.getBounds().height / 2);
+            dragedModifier.sprite.y = evt.stageY - (dragedModifier.sprite.getBounds().width / 2);
 
             needUpdate = true;
 
