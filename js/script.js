@@ -22,7 +22,7 @@ var vegeColor = "#33CC8E";
 var brunColor = "#E8D0AA";
 var counterColor = "#588293";
 var planetColor = "#EDEDED";
-var atmoColor = "#rgba(237, 237, 237, 0.5)";
+var atmoColor = "#rgb(237, 237, 237)";
 
 // Bars
 var barWidth = 330;
@@ -793,6 +793,9 @@ function setPlanetState () {
 
     var greenRadius = brunRadius * bars[3][2] / 100;
     setPlanetInnerGreen(vegeColor, greenRadius);
+
+    var atmoTemp = Math.round(120 + (117 * (100 - bars[2][2]) / 100));
+    setPlanetOuter("rgb(237, "+atmoTemp+", "+atmoTemp+")", planetOuterValue);
 }
 
 function setPlanetOuter (outerColor, outerRadius) {
