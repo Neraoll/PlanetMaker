@@ -74,6 +74,7 @@ function gameInit () {
             {src:"assets/icon4.png", id:"temp"},
             {src:"assets/element-10.png", id:"modifiers"},
             {src:"assets/raceTest.png", id:"raceTest"},
+            {src:"js/data.json", id:"datas"},
             // {src:"paddle.png", id:"cpu"},
             // {src:"paddle.png", id:"player"},
             // {src:"ball.png", id:"ball"},
@@ -167,13 +168,14 @@ function initUI () {
         console.log(event);
      	// Click Happened.
      	gameLoaded = !gameLoaded;
-        if (musicPlayer.isPlaying) {};
-                musicPlayer.stop();
+        // if (musicPlayer.isPlaying) {};
+                // musicPlayer.stop();
 
     }
- 	canvas.addEventListener("click", handleClick);
-
- 	createjs.Sound.PL
+ 	// canvas.addEventListener("click", handleClick);
+    // End drag
+    // canvas.addEventListener("mouseup", handleUp);
+console.log(preloader.getResult("datas"));
 
  	var val = 0;
     var vol = 1.0;
@@ -249,8 +251,11 @@ function gameTick () {
             animations.splice(toRemove[i],1);
         };
 
-        needUpdate = (len > 0);
+        if (len > 0) {
+            needUpdate = true;
+        };
 	};
+
 
     if (needUpdate) {
         stage.update();
@@ -448,15 +453,18 @@ function addModifiersBar (x, y, modifiersNumber) {
     	stage.addChild(modifiersBitmap);
 
         // modifiersBitmap.addEventListener("mousemove", handleMove);
-        modifiersBitmap.addEventListener("pressmove", handleMove);
         function handleMove(evt) {
             evt.target.x = evt.stageX;
             evt.target.y = evt.stageY;
 
             needUpdate = true;
+
             // Check out the DragAndDrop example in GitHub for more
-            // console.log(event);
         }
+        function handleUp (evt) {
+            console.log("up");
+        }
+        modifiersBitmap.addEventListener("pressmove", handleMove);
     };
 
     createjs.Touch.enable(stage);
