@@ -38,11 +38,15 @@ var counterBar;
 var modifiersBarWidth = 80;
 var modifiersBarHeight = 320;
 var modifiersMaxNumber = 5;
+var modifiersBtns = [];
 var modifiersBar;
+var dragedModifier;
 
 // Planet
 var planetOuter;
 var planetInner;
+var planetInnerValue;
+var planetOuterValue;
 
 // Sound
 var musicPlayer;
@@ -77,14 +81,19 @@ function gameInit () {
             {src:"assets/icon2.png", id:"aqua"},
             {src:"assets/icon3.png", id:"vege"},
             {src:"assets/icon4.png", id:"temp"},
-            {src:"assets/element-10.png", id:"modifiers"},
+            {src:"assets/modifier-0.png", id:"modifier0"},
+            {src:"assets/modifier-1.png", id:"modifier1"},
+            {src:"assets/modifier-2.png", id:"modifier2"},
+            {src:"assets/modifier-3.png", id:"modifier3"},
+            {src:"assets/modifier-4.png", id:"modifier4"},
+            {src:"assets/modifier-5.png", id:"modifier5"},
             {src:"assets/raceTest-0.png", id:"raceTest0"},
             {src:"assets/raceTest-1.png", id:"raceTest1"},
             {src:"assets/raceTest-2.png", id:"raceTest2"},
             {src:"assets/raceTest-3.png", id:"raceTest3"},
             {src:"assets/raceTest-4.png", id:"raceTest4"},
             {src:"assets/raceTest-5.png", id:"raceTest5"},
-            {src:"js/data.json", id:"datas"},
+            {src:"js/data.json", id:"data"},
             // {src:"paddle.png", id:"cpu"},
             // {src:"paddle.png", id:"player"},
             // {src:"ball.png", id:"ball"},
@@ -123,6 +132,20 @@ function initData () {
     race = gameData.race;
     modifiers = gameData.modifiers;
     // console.log(gameData);
+}
+
+function lineDistance( point1, point2 )
+    {
+    var xs = 0;
+    var ys = 0;
+     
+    xs = point2.x - point1.x;
+    xs = xs * xs;
+     
+    ys = point2.y - point1.y;
+    ys = ys * ys;
+     
+    return Math.sqrt( xs + ys );
 }
 
 function initUI () {
@@ -193,7 +216,29 @@ function initUI () {
     }
  	// canvas.addEventListener("click", handleClick);
     // End drag
-    // canvas.addEventListener("mouseup", handleUp);
+    function handleUp (argument) {
+        if (dragedModifier) {
+            // Detect collision
+            // Fix detection (change for center pos)
+            dragedModifier.x += (dragedModifier.getBounds().height / 2);
+            dragedModifier.y += (dragedModifier.getBounds().height / 2);
+            // Planet
+            if (lineDistance(dragedModifier, planetInner) < planetInnerValue) {
+                console.log("inner");
+            }
+            // Atmosphere
+            else if (lineDistance(dragedModifier, planetOuter) < planetOuterValue) {
+                console.log("outer");
+            };
+
+            // Remove modifier
+            stage.removeChild(dragedModifier);
+            dragedModifier = null;
+
+            needUpdate = true;
+        };
+    }
+    canvas.addEventListener("mouseup", handleUp);
 
 
  	var val = 0;
@@ -294,7 +339,7 @@ function addBar (x, y, color, iconId, value, maxValue, bestValue) {
 
  //    //Add Shape instance to stage display list.
  //    stage.addChild(barBorder);
-console.log(value);
+
 	// Create container
  	var barContainer = new createjs.Container();
  	barContainer.x = x;
@@ -445,6 +490,10 @@ function addModifiersBar (x, y, modifiersNumber) {
 		return;
 	};
 
+    if (modifiersNumber >= modifiers.length) {
+        modifiersNumber = modifiers.length;
+    };
+
 	// Create container
  	var barContainer = new createjs.Container();
  	barContainer.x = x;
@@ -467,26 +516,33 @@ function addModifiersBar (x, y, modifiersNumber) {
     var modifiersY = modifiersUpMargin;
     for (var i = 0; i < modifiersNumber; i++) {
        	// Create bitmap
-        var modifiersBitmap = new createjs.Bitmap(preloader.getResult("modifiers"));
+        var modifiersBitmap = new createjs.Bitmap(preloader.getResult("modifier" + i));
 
-    	modifiersBitmap.x = x + 16;
-    	modifiersBitmap.y = y + modifiersY;
+    	modifiersBitmap.x = 16;
+    	modifiersBitmap.y = modifiersY;
     	modifiersY += modifiersBitmap.getBounds().height + modifiersSpace;
 
     	// Add to the container
-    	stage.addChild(modifiersBitmap);
+    	barContainer.addChild(modifiersBitmap);
+
+        modifiersBtns.push(modifiersBitmap);
 
         // modifiersBitmap.addEventListener("mousemove", handleMove);
         function handleMove(evt) {
-            evt.target.x = evt.stageX;
-            evt.target.y = evt.stageY;
+            if (!dragedModifier) {
+                var modifierIdx = modifiersBtns.indexOf(evt.target);
+
+                // Duplicate object
+                dragedModifier = new createjs.Bitmap(preloader.getResult("modifier" + modifierIdx));
+                stage.addChild(dragedModifier);
+            };
+
+            dragedModifier.x = evt.stageX - (dragedModifier.getBounds().height / 2);
+            dragedModifier.y = evt.stageY - (dragedModifier.getBounds().width / 2);
 
             needUpdate = true;
 
             // Check out the DragAndDrop example in GitHub for more
-        }
-        function handleUp (evt) {
-            console.log("up");
         }
         modifiersBitmap.addEventListener("pressmove", handleMove);
     };
@@ -512,6 +568,8 @@ function addPlanet (x, y, outerColor, innerColor, outerRadius, innerRadius) {
 	planetOuter.y = y;
     planetOuter.alpha = 0.5;
 
+    planetOuterValue = outerRadius;
+
 	stage.addChild(planetOuter);
 
 	// Create planet inner
@@ -521,6 +579,8 @@ function addPlanet (x, y, outerColor, innerColor, outerRadius, innerRadius) {
 
 	planetInner.x = x;
 	planetInner.y = y;
+
+    planetInnerValue = innerRadius;
 
 	stage.addChild(planetInner);
 }
@@ -533,6 +593,7 @@ function setPlanetOuter (outerColor, outerRadius) {
 	planetOuter.graphics.clear();
 	planetOuter.graphics.beginStroke(outerColor).drawCircle(0, 0, outerRadius);
 	planetOuter.graphics.beginFill(outerColor).drawCircle(0, 0, outerRadius);
+    planetOuterValue = outerRadius;
 }
 
 function setPlanetInner (innerColor, innerRadius) {
@@ -543,6 +604,7 @@ function setPlanetInner (innerColor, innerRadius) {
 	planetInner.graphics.clear();
 	planetInner.graphics.beginStroke(innerColor).drawCircle(0, 0, innerRadius);
 	planetInner.graphics.beginFill(innerColor).drawCircle(0, 0, innerRadius);
+    planetInnerValue = innerRadius;
 }
 
 // Circles Methods, color is a css compatible color value
