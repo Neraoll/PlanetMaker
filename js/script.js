@@ -59,6 +59,9 @@ var circleRadius = 50;
 var circles = [];
 
 // Game data
+var data;
+var raceData;
+var planetData;
 var gameData;
 var planet;
 var race;
@@ -131,7 +134,10 @@ function gameInit () {
 }
 
 function initData () {
-    gameData = preloader.getResult("data").game;
+    data = preloader.getResult("data");
+    raceData = data.race;
+    planetData = data.planet;
+    gameData = data.game;
     planet = gameData.planet;
     race = gameData.race;
     modifiers = gameData.modifiers;
@@ -228,12 +234,7 @@ function initUI () {
     ringFgBitmap.y = 221;
     stage.addChild(ringFgBitmap);
 
-    // Add Race Test
-    var rand = Math.floor(Math.random()*5); 
-    var raceTestBitmap = new createjs.Bitmap(preloader.getResult("raceTest"+rand));
-    raceTestBitmap.x = 15;
-    raceTestBitmap.y = 380;
-    stage.addChild(raceTestBitmap);
+    addRace();
 
     // Place UI Elements
 
@@ -334,6 +335,32 @@ function initUI () {
     animations.push({handler: handleTick, count: 5});
 
     gameLoaded = true;
+}
+
+function addRace(){
+    // Add Race
+    var rand = Math.floor(Math.random()*5); 
+    var raceTestBitmap = new createjs.Bitmap(preloader.getResult("raceTest"+rand));
+    raceTestBitmap.x = 15;
+    raceTestBitmap.y = 380;
+    stage.addChild(raceTestBitmap);
+
+    // Create Name Race label
+    var rName = "";
+    rand = 2 + Math.floor(Math.random()*2); 
+    for(var i=0 ; i < rand ; i++){
+        var rand2 = Math.floor(Math.random()*raceData.length);
+        rName += raceData[rand2];
+    }
+
+    rName = rName.charAt(0).toUpperCase() + rName.slice(1);
+
+    raceName = new createjs.Text(rName,"15px Verdana",bgUiColor);
+    raceName.lineWidth = 110;
+    raceName.textAlign = "center";
+    raceName.x = 70;
+    raceName.y = 360;
+    stage.addChild(raceName);
 }
 
 function initSound () {
