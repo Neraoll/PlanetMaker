@@ -73,6 +73,7 @@ var race;
 var modifiers;
 var score;
 var scoreLbl;
+var links;
 
 // Game state
 var waitingForRestart = false;
@@ -149,7 +150,7 @@ function initData () {
     planet = gameData.planet;
     race = gameData.race;
     modifiers = gameData.modifiers;
-    links
+    links = data.links;
     // console.log(gameData);
 }
 
@@ -179,13 +180,14 @@ function fireScore () {
         scoreLbl.x = canvas.width / 2;
         scoreLbl.y = canvas.height / 2;
         stage.addChild(scoreLbl);
+    } else {
+        scoreLbl.visible = true
     };
 
     needUpdate = true;
 }
 
 function computeScore () {
-    if (!score) {
         score = 0;
         for (var i = 0; i < bars.length; i++) {
             // 100 - (abs(ValeurRaceDemandée - ValeurPlanèteActuelle) * 100 / abs(ValeurDemandéeRace - ValeurPlanèteDépart))
@@ -201,7 +203,20 @@ function computeScore () {
             planetContainer.alpha -= 0.06;
         }, 1.0 / 0.06));
         setTimeout(fireScore, 1000);
+}
+
+function barIndexForId (barId) {
+    var index = 0;
+    if (barId == "mass") {
+        index = 0;
+    } else if (barId == "aqua") {
+        index = 1;
+    } else if (barId == "temp") {
+        index = 2;
+    } else if (barId == "vege") {
+        index = 3;
     };
+    return index;
 }
 
 function dropModifier (place, modifier) {
@@ -221,18 +236,31 @@ function dropModifier (place, modifier) {
         barId = modifiers[modifier.idx].atmo;
     };
 
-    if (barId == "mass") {
-        index = 0;
-    } else if (barId == "aqua") {
-        index = 1;
-    } else if (barId == "temp") {
-        index = 2;
-    } else if (barId == "vege") {
-        index = 3;
-    };
-
+    // Change base bar
+    var index = barIndexForId(barId);
     setBarValue(index, bars[index][2] + value);
     setPlanetState();
+
+    // Change links bar
+    var valueMultiplier = modifiers[modifier.idx].link;
+    var linkdata = links[barId];
+    if (value > 0) {
+        for (var key in linkdata.up) {
+            var newVal = linkdata.up[key] * valueMultiplier;
+            console.log(barId + " " + valueMultiplier + " up " + key);
+            var barIdx = barIndexForId(key);
+
+            setBarValue(barIdx, bars[barIdx][2] + newVal);
+        };
+    } else {
+        for (var key in linkdata.down) {
+            var newVal = linkdata.down[key] * valueMultiplier;
+            console.log(barId + " " + newVal + " down " + key);
+            var barIdx = barIndexForId(key);
+
+            setBarValue(barIdx, bars[barIdx][2] + newVal);
+        };
+    };
 
     // Remove one chance
     setCounterBarValue(counterBarValue + 1);
@@ -542,8 +570,10 @@ function addBar (x, y, color, iconId, value, maxValue, bestValue) {
 }
 
 function setBarValue (index, value) {
+    if (!value) { value = 0};
     if (value < 0) { value = 0; };
     if (value > bars[index][1]) { value = bars[index][1]; };
+    
 	var newWidth = value * (barWidth / bars[index][1]);
 	bars[index][0].getChildAt(1).scaleX = newWidth / barWidth;
     bars[index][2] = value;
