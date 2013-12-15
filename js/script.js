@@ -44,6 +44,7 @@ var modifiersBar;
 var dragedModifier;
 
 // Planet
+var planetContainer;
 var planetOuter;
 var planetInner;
 var planetInnerValue;
@@ -62,6 +63,8 @@ var gameData;
 var planet;
 var race;
 var modifiers;
+var score;
+var scoreLbl;
 
 function gameInit () {
 	// Get canvas
@@ -149,13 +152,34 @@ function lineDistance( point1, point2 )
     return Math.sqrt( xs + ys );
 }
 
+function fireScore () {
+    planetContainer.visible = false;
+
+    if (!scoreLbl) {
+        // Create Progress label
+        scoreLbl = new createjs.Text(score, "30px Verdana", "black");
+        // scoreLbl.lineWidth = 200;
+        scoreLbl.textAlign = "center";
+        scoreLbl.x = canvas.width / 2;
+        scoreLbl.y = canvas.height / 2;
+        stage.addChild(scoreLbl);
+    };
+
+    needUpdate = true;
+}
+
+function computeScore () {
+    if (!score) {
+        score = 0;
+        setTimeout(fireScore, 2000);
+    };
+}
+
 function dropModifier (place, modifier) {
-    if (counterBarValue <= 0) {
+    if (counterBarValue >= counterBar[1]) {
         return;
     };
 
-    // Remove one chance
-    setCounterBarValue(counterBarValue - 1);
     var value = 0;
     var barId = "";
     if (place == planetInner) {
@@ -179,6 +203,10 @@ function dropModifier (place, modifier) {
     };
 
     setBarValue(index, bars[index][2] + value);
+
+    // Remove one chance
+    setCounterBarValue(counterBarValue + 1);
+
     needUpdate = true;
 }
 
@@ -222,7 +250,7 @@ function initUI () {
     var vegBar = addBar(405, 65, vegeColor, "vege", planet.startValue.vege, 100, race.value.vege);
 
 	// Add counter bar
-	addCounterBar(595, 115, counterColor, 2, 6);
+	addCounterBar(595, 115, counterColor, 0, 6);
 
     // Add modifiers bar
     addModifiersBar(705, 165, modifiersMaxNumber);
@@ -498,6 +526,8 @@ function addCounterBar (x, y, circleColor, value, maxValue) {
 }
 
 function setCounterBarValue (value) {
+    counterBarValue = value;
+
 	if (value != 0) { 
 		value++;
 	};
@@ -521,7 +551,9 @@ function setCounterBarValue (value) {
     	};
     };
 
-    counterBarValue = value;
+    if (counterBarValue >= counterBar[1]) {
+        computeScore();
+    };
 }
 
 // Modifiers Bar
@@ -596,9 +628,10 @@ function addModifiersBar (x, y, modifiersNumber) {
 // Planet Methods
 function addPlanet (x, y, outerColor, innerColor, outerRadius, innerRadius) {
 	// // Create container
- // 	var barContainer = new createjs.Container();
- // 	barContainer.x = x;
- //    barContainer.y = y;
+ 	planetContainer = new createjs.Container();
+ 	planetContainer.x = 0;
+    planetContainer.y = 0;
+    planetContainer.setBounds(0,0,stage.getBounds().width,stage.getBounds().height);
 
 	// Create planet outer
 	planetOuter = new createjs.Shape();
@@ -611,7 +644,7 @@ function addPlanet (x, y, outerColor, innerColor, outerRadius, innerRadius) {
 
     planetOuterValue = outerRadius;
 
-	stage.addChild(planetOuter);
+	planetContainer.addChild(planetOuter);
 
 	// Create planet inner
 	planetInner = new createjs.Shape();
@@ -623,7 +656,9 @@ function addPlanet (x, y, outerColor, innerColor, outerRadius, innerRadius) {
 
     planetInnerValue = innerRadius;
 
-	stage.addChild(planetInner);
+	planetContainer.addChild(planetInner);
+
+    stage.addChild(planetContainer);
 }
 
 function setPlanetOuter (outerColor, outerRadius) {
