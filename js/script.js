@@ -163,8 +163,7 @@ function fireScore () {
 
     if (!scoreLbl) {
         // Create Progress label
-        scoreLbl = new createjs.Text(score, "30px Verdana", "black");
-        // scoreLbl.lineWidth = 200;
+        scoreLbl = new createjs.Text(score + "%", "30px Verdana", "white");
         scoreLbl.textAlign = "center";
         scoreLbl.x = canvas.width / 2;
         scoreLbl.y = canvas.height / 2;
@@ -177,6 +176,15 @@ function fireScore () {
 function computeScore () {
     if (!score) {
         score = 0;
+        for (var i = 0; i < bars.length; i++) {
+            // 100 - (abs(ValeurRaceDemandée - ValeurPlanèteActuelle) * 100 / abs(ValeurDemandéeRace - ValeurPlanèteDépart))
+            var barVal = bars[i][2];
+            var startVal =  bars[i][3];
+            var raceVal =  bars[i][4];
+            score += 100 - ((Math.abs(raceVal - barVal) * 100) / (Math.abs(raceVal - startVal)));
+        };
+        score /= 4;
+        score = Math.ceil(score);
         setTimeout(fireScore, 2000);
     };
 }
@@ -483,7 +491,7 @@ function addBar (x, y, color, iconId, value, maxValue, bestValue) {
     //Update stage will render next frame
     needUpdate = true;
 
-    bars.push([barContainer, maxValue, value]);
+    bars.push([barContainer, maxValue, value, value, bestValue]);
 
     return bars.length - 1;
 }
