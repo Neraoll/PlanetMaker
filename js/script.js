@@ -30,6 +30,7 @@ var barHeight = 40;
 var bars = [];
 
 // Counter Bar
+var counterNumber = 10;
 var counterBarWidth = 190;
 var counterBarHeight = 40;
 var counterCircleRadius = 10;
