@@ -180,7 +180,6 @@ function lineDistance( point1, point2 )
 }
 
 function fireScore () {
-    waitingForRestart = true;
     // planetContainer.visible = false;
     // planetContainer.alpha = 1.0;
 
@@ -206,22 +205,24 @@ function fireScore () {
 }
 
 function computeScore () {
+        waitingForRestart = true;
+
         score = 0;
         for (var i = 0; i < bars.length; i++) {
             // 100 - (abs(ValeurRaceDemandée - ValeurPlanèteActuelle) * 100 / abs(ValeurDemandéeRace - ValeurPlanèteDépart))
             var barVal = bars[i][2];
             var startVal =  bars[i][3];
             var raceVal =  bars[i][4];
-            score += 100 - ((Math.abs(raceVal - barVal) * 100) / (Math.abs(raceVal - startVal)));
+            score += 100 - ((Math.abs(raceVal - barVal) * 100) / (Math.abs(raceVal - startVal) + 1));
         };
         score /= 4;
         score = Math.ceil(score);
 
     // Play music
     if (score > 0) {
-        playMusic("scorePos",false);
+        playMusic("scorePos", false);
     } else {
-        playMusic("scoreNeg",false);
+        playMusic("scoreNeg", false);
     };
         setTimeout(fireScore, 1000);
 }
@@ -319,6 +320,7 @@ function restartGame () {
     raceContainer.removeAllChildren();
     addRace();
 
+    playGameMusic();
     needUpdate = true;
 }
 
@@ -488,7 +490,9 @@ function generateName(tData, minChar){
 }
 
 function initSound () {
-    playMusic("musicMenu", true);
+    if (!musicPlayer) {
+        playMusic("musicMenu", true);
+    };
 
     // musicPlayer = createjs.Sound.play("music1");
     // music2player = createjs.Sound.play("music2");
