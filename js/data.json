@@ -1,5 +1,5 @@
 {
-	"race" : [
+	"race": [
 		"go",
 		"min",
 		"yu",
@@ -15,7 +15,7 @@
 		"fal",
 		"hin"
 	],
-	"planet" : [
+	"planet": [
 		"phy",
 		"son",
 		"mu",
@@ -44,29 +44,81 @@
 				"vege":1
 			}
 		},
-		"temp" : {
+		"temp": {
 			"up": {
 				"aqua":-1,
 				"vege":1
 			},
-			"down" : {
+			"down": {
 				"aqua":1,
 				"vege":-1
 			}			
 		},
-		"aqua" : {
+		"aqua": {
 			"up": {
 				"vege":1
 			},
-			"down" : {
+			"down": {
 				"vege":-1
 			}			
 		},
-		"vege" : {
+		"vege": {
 			"up": {
 			},
-			"down" : {
+			"down": {
 			}			
 		}	
+	},
+	"game": {
+		"race": {
+			"value": {
+				"mass": 55,
+				"temp": 24,
+				"aqua": 50,
+				"vege": 68
+			},
+			"name": "Bohuntis"
+		},
+		"planet": {
+			"startValue": {
+				"mass": 30,
+				"temp": 70,
+				"aqua": 60,
+				"vege": 15
+			},
+			"currentValue": {
+				"mass": 30,
+				"temp": 70,
+				"aqua": 60,
+				"vege": 15
+			},
+			"name": "Kappsy"
+		},
+		"modifiers":[
+			{
+				"value": -20,
+				"link": 5,
+				"atmo": "aqua",
+				"crust": "vege"
+			},
+			{
+				"value": 10,
+				"link": 5,
+				"atmo": "vege",
+				"crust": "aqua"
+			},
+			{
+				"value": 25,
+				"link": 5,
+				"atmo": "mass",
+				"crust": "temp"
+			},
+			{
+				"value": -12,
+				"link": 5,
+				"atmo": "temp",
+				"crust": "mass"
+			}
+		]
 	}
 }
