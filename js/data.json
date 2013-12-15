@@ -97,24 +97,24 @@
 		"modifiers":[
 			{
 				"value": -20,
-				"link": 5,
+				"link": 8,
 				"atmo": "aqua",
 				"crust": "vege"
 			},
 			{
-				"value": 10,
-				"link": 3,
+				"value": 20,
+				"link": 8,
 				"atmo": "vege",
 				"crust": "aqua"
 			},
 			{
-				"value": 25,
-				"link": 10,
+				"value": 20,
+				"link": 8,
 				"atmo": "mass",
 				"crust": "temp"
 			},
 			{
-				"value": -12,
+				"value": -20,
 				"link": 8,
 				"atmo": "temp",
 				"crust": "mass"

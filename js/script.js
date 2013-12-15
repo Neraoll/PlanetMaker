@@ -30,7 +30,7 @@ var barHeight = 40;
 var bars = [];
 
 // Counter Bar
-var counterNumber = 10;
+var counterNumber = 8;
 var counterBarWidth = 190;
 var counterBarHeight = 40;
 var counterCircleRadius = 10;
@@ -44,6 +44,10 @@ var modifiersMaxNumber = 5;
 var modifiersBtns = [];
 var modifiersBar;
 var dragedModifier;
+
+// Race
+var raceContainer;
+var racesNumber = 6;
 
 // Planet
 var planetContainer;
@@ -296,6 +300,10 @@ function restartGame () {
 
     score = null;
 
+    //Nouvelle race
+    raceContainer.removeAllChildren();
+    addRace();
+
     needUpdate = true;
 }
 
@@ -307,7 +315,14 @@ function initUI () {
     // Add planet
     addPlanet(400, 330, planetColor, atmoColor, 150, 80);
 
+    // Create container
+    raceContainer = new createjs.Container();
+    raceContainer.x = 0;
+    raceContainer.y = 0;
+    raceContainer.setBounds(0,0,stage.getBounds().width,stage.getBounds().height);
+    stage.addChild(raceContainer);
     addRace();
+
 
     // Place UI Elements
 
@@ -324,7 +339,8 @@ function initUI () {
     var vegBar = addBar(405, 65, vegeColor, "vege", planet.startValue.vege, 100, race.value.vege);
 
 	// Add counter bar
-	addCounterBar(595, 115, counterColor, 0, 6);
+    counterBarWidth = counterNumber * 30 + 10;
+	addCounterBar(800 - (counterBarWidth + 15), 115, counterColor, 0, counterNumber);
 
     // Add modifiers bar
     addModifiersBar(705, 165, modifiersMaxNumber);
@@ -422,12 +438,11 @@ function animationWith (handler, count) {
 }
 
 function addRace(){
-    // Add Race
-    var rand = Math.floor(Math.random()*5); 
+    var rand = Math.floor(Math.random()*racesNumber); 
     var raceTestBitmap = new createjs.Bitmap(preloader.getResult("raceTest"+rand));
     raceTestBitmap.x = 15;
     raceTestBitmap.y = 380;
-    stage.addChild(raceTestBitmap);
+    raceContainer.addChild(raceTestBitmap);
 
     rName = generateName(raceData, 2);
 
@@ -436,7 +451,13 @@ function addRace(){
     raceName.textAlign = "center";
     raceName.x = 70;
     raceName.y = 360;
-    stage.addChild(raceName);
+    raceContainer.addChild(raceName);
+
+    //New value
+    gameData.race.value.mass = 10 + Math.floor(Math.random()*80);
+    gameData.race.value.temp = 10 + Math.floor(Math.random()*80);
+    gameData.race.value.vege = 10 + Math.floor(Math.random()*80);
+    gameData.race.value.aqua = 10 + Math.floor(Math.random()*80);
 }
 
 function generateName(tData, minChar){
@@ -829,7 +850,7 @@ function setPlanetState () {
     var blueRadius = 50 + (75 * bars[0][2] / 100);
     setPlanetInner(aquaColor, blueRadius);
 
-    var brunRadius = blueRadius * bars[1][2] / 100;
+    var brunRadius = blueRadius * (100 - bars[1][2]) / 100;
     setPlanetInnerBrun(brunColor, brunRadius);
 
     var greenRadius = brunRadius * bars[3][2] / 100;
@@ -856,7 +877,7 @@ function setPlanetInner (innerColor, innerRadius) {
 	};
 
 	planetInner.graphics.clear();
-	planetInner.graphics.beginStroke(innerColor).drawCircle(0, 0, innerRadius);
+	planetInner.graphics.beginStroke(bgUiColor).drawCircle(0, 0, innerRadius);
 	planetInner.graphics.beginFill(innerColor).drawCircle(0, 0, innerRadius);
     planetInnerValue = innerRadius;
 }
