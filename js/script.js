@@ -8,7 +8,6 @@ var preloader;
 var progressLbl;
 var gameLoaded = false;
 
-
 // Assets
 var assets;
 
@@ -53,6 +52,12 @@ var music2player;
 var circleRadius = 50;
 var circles = [];
 
+// Game data
+var gameData;
+var planet;
+var race;
+var modifiers;
+
 function gameInit () {
 	// Get canvas
 	canvas = document.getElementById("gameCanvas");
@@ -73,7 +78,7 @@ function gameInit () {
             {src:"assets/icon3.png", id:"vege"},
             {src:"assets/icon4.png", id:"temp"},
             {src:"assets/element-10.png", id:"modifiers"},
-            {src:"js/data.json", id:"datas"},
+            {src:"js/data.json", id:"data"},
             // {src:"paddle.png", id:"cpu"},
             // {src:"paddle.png", id:"player"},
             // {src:"ball.png", id:"ball"},
@@ -106,6 +111,14 @@ function gameInit () {
     createjs.Ticker.addEventListener("tick", gameTick);
 }
 
+function initData () {
+    gameData = preloader.getResult("data").game;
+    planet = gameData.planet;
+    race = gameData.race;
+    modifiers = gameData.modifiers;
+    // console.log(gameData);
+}
+
 function initUI () {
     // Add background
     var backgroundBitmap = new createjs.Bitmap(preloader.getResult("bg"));
@@ -127,16 +140,16 @@ function initUI () {
     // Place UI Elements
 
     // Mass
-    var massBar = addBar(15, 15, massColor, "mass", 0, 100, 5);
+    var massBar = addBar(15, 15, massColor, "mass", planet.startValue.mass, 100, race.value.mass);
 
     // Aquatic
-    var aquaBar = addBar(15, 65, aquaColor, "aqua", 0, 100, 5);
+    var aquaBar = addBar(15, 65, aquaColor, "aqua", planet.startValue.aqua, 100, race.value.aqua);
 
     // Temperature
-    var tempBar = addBar(405, 15, tempColor, "temp", 0, 100, 5);
+    var tempBar = addBar(405, 15, tempColor, "temp", planet.startValue.temp, 100, race.value.temp);
 
 	// Vegetation
-    var vegBar = addBar(405, 65, vegeColor, "vege", 0, 100, 5);
+    var vegBar = addBar(405, 65, vegeColor, "vege", planet.startValue.vege, 100, race.value.vege);
 
 	// Add counter bar
 	addCounterBar(595, 115, counterColor, 2, 6);
@@ -168,7 +181,7 @@ function initUI () {
  	// canvas.addEventListener("click", handleClick);
     // End drag
     // canvas.addEventListener("mouseup", handleUp);
-console.log(preloader.getResult("datas"));
+
 
  	var val = 0;
     var vol = 1.0;
@@ -180,7 +193,7 @@ console.log(preloader.getResult("datas"));
         //if (circle.x > stage.canvas.width) { circle.x = 0; }
 
         val = (val + 1) % 7;
-        setBarValue(0, val*10);
+        // setBarValue(0, val*10);
         setCounterBarValue(val);
 
         
@@ -222,6 +235,7 @@ function handleComplete(event) {
 	//triggered when all loading is complete
 	stage.removeChild(progressLbl);
 	stage.update();
+    initData();
 	initUI();
     // initSound();
 }
@@ -267,7 +281,7 @@ function addBar (x, y, color, iconId, value, maxValue, bestValue) {
 
  //    //Add Shape instance to stage display list.
  //    stage.addChild(barBorder);
-
+console.log(value);
 	// Create container
  	var barContainer = new createjs.Container();
  	barContainer.x = x;
@@ -315,8 +329,12 @@ function addBar (x, y, color, iconId, value, maxValue, bestValue) {
 	// Add container
     stage.addChild(barContainer);
 
+    // Set value
+    var newWidth = value * (barWidth / maxValue);
+    barContent.scaleX = newWidth / barWidth;
+
     //Update stage will render next frame
-    stage.update();
+    needUpdate = true;
 
     bars.push([barContainer, maxValue]);
 
