@@ -99,7 +99,7 @@ function gameInit () {
 
     stage.update();
 
-    createjs.Ticker.setFPS(1);
+    createjs.Ticker.setFPS(30);
     createjs.Ticker.addEventListener("tick", gameTick);
 }
 
@@ -184,7 +184,7 @@ function initUI () {
         stage.update();
     }
 
-    animations.push(handleTick)
+    animations.push({handler: handleTick, count: 5});
 
     gameLoaded = true;
 }
@@ -194,7 +194,6 @@ function initSound () {
     music2player = createjs.Sound.play("music2");
     music2player.setVolume(0.0);
 }
-
 
 // Peload Methods
 function handleProgress(event)
@@ -217,9 +216,19 @@ function handleComplete(event) {
 function gameTick () {
 	if (gameLoaded) {
         var len = animations.length;
+        var toRemove = [];
 		for (var i = 0; i < len; i++) {
-			animations[i]()
+			animations[i].handler()
+            animations[i].count--;
+
+            if (animations[i].count <= 0) {
+                toRemove.push(i);
+            };
 		};
+
+        for (var i = 0; i < toRemove.length; i++) {
+            animations.splice(toRemove[i],1);
+        };
 
         needUpdate = (len > 0);
 	};
@@ -421,7 +430,6 @@ function addModifiersBar (x, y, modifiersNumber) {
 
         // modifiersBitmap.addEventListener("mousemove", handleMove);
         modifiersBitmap.addEventListener("pressmove", handleMove);
-        modifiersBitmap.identifier = i;
         function handleMove(evt) {
             evt.target.x = evt.stageX;
             evt.target.y = evt.stageY;
