@@ -1,6 +1,7 @@
 // Main
 var canvas;
 var stage;
+var needUpdate = false;
 
 // Preload
 var preloader;
@@ -56,7 +57,7 @@ function gameInit () {
     assets = [
             {src:"assets/icon1.png", id:"mass"},
             {src:"assets/icon2.png", id:"aqua"},
-            {src:"assets/icon3.png", id:"veg"},
+            {src:"assets/icon3.png", id:"vege"},
             {src:"assets/icon4.png", id:"temp"},
             {src:"assets/element-10.png", id:"modifiers"},
             // {src:"paddle.png", id:"cpu"},
@@ -92,6 +93,9 @@ function gameInit () {
 }
 
 function initUI () {
+	// Add planet
+	addPlanet(400, 350, "blue", "white", 200, 80);
+
     // Place UI Elements
 
     // Mass
@@ -103,19 +107,16 @@ function initUI () {
     // Temperature
     var tempBar = addBar(405, 15, "red", "temp", 0, 100, 5);
 
-	// Vegetation
-    var vegBar = addBar(405, 65, "green", "veg", 0, 100, 5);
+    // Vegetation
+    var vegBar = addBar(405, 65, "green", "vege", 0, 100, 5);
 
-	// Add counter bar
-	addCounterBar(595, 115, "blue", 2, 6);
+    // Add counter bar
+    addCounterBar(595, 115, "blue", 2, 6);
 
-	// Add modifiers bar
-	addModifiersBar(705, 165, modifiersMaxNumber);
+    // Add modifiers bar
+    addModifiersBar(705, 165, modifiersMaxNumber);
 
-	// Add planet
-	addPlanet(400, 350, "blue", "white", 200, 80);
-
-	stage.update();
+    needUpdate = true;
 
  //    circle.addEventListener("mousedown", handlePress);
  // function handlePress(event) {
@@ -123,20 +124,19 @@ function initUI () {
  //     // Listen for mouse move while the mouse is down:
  //     event.addEventListener("mousemove", handleMove);
  // }
- // function handleMove(event) {
- //     // Check out the DragAndDrop example in GitHub for more
- // }
+ 
  	// createjs.Touch.enable(stage);
 
  	var ok = false;
 
  	function handleClick(event) {
+        console.log(event);
      	// Click Happened.
      	gameLoaded = !gameLoaded;
         if (musicPlayer.isPlaying) {};
                 musicPlayer.stop();
 
-     }
+    }
  	canvas.addEventListener("click", handleClick);
 
  	createjs.Sound.PL
@@ -162,8 +162,8 @@ function initUI () {
         } else {
             vol += 0.1 % 1.0;
         };
-        musicPlayer.setVolume(vol);
-        music2player.setVolume(1.0 - vol);
+        // musicPlayer.setVolume(vol);
+        // music2player.setVolume(1.0 - vol);
         // setPlanetInner("white", val*50);
         // barContent.scaleY = val;
         stage.update();
@@ -201,12 +201,18 @@ function handleComplete(event) {
 // Game tick
 function gameTick () {
 	if (gameLoaded) {
-		for (var i = animations.length - 1; i >= 0; i--) {
+        var len = animations.length;
+		for (var i = 0; i < len; i++) {
 			animations[i]()
 		};
+
+        needUpdate = (len > 0);
 	};
 
-	stage.update();
+    if (needUpdate) {
+        stage.update();
+        needUpdate = false;
+    };
 }
 
 // Bars Methods, color is a css compatible color value
@@ -380,6 +386,9 @@ function addModifiersBar (x, y, modifiersNumber) {
     // Add Shape instance to stage display list.
     barContainer.addChild(barBackground);
 
+    // Add to stage
+    stage.addChild(barContainer);
+
     // Add modifiers
     var modifiersUpMargin = 20;
     var modifiersSpace = 10;
@@ -388,16 +397,27 @@ function addModifiersBar (x, y, modifiersNumber) {
        	// Create bitmap
         var modifiersBitmap = new createjs.Bitmap(preloader.getResult("modifiers"));
 
-    	modifiersBitmap.x = 16;
-    	modifiersBitmap.y = modifiersY;
+    	modifiersBitmap.x = x + 16;
+    	modifiersBitmap.y = y + modifiersY;
     	modifiersY += modifiersBitmap.getBounds().height + modifiersSpace;
 
     	// Add to the container
-    	barContainer.addChild(modifiersBitmap);
+    	stage.addChild(modifiersBitmap);
+
+        // modifiersBitmap.addEventListener("mousemove", handleMove);
+        modifiersBitmap.addEventListener("pressmove", handleMove);
+        modifiersBitmap.identifier = i;
+        function handleMove(evt) {
+            evt.target.x = evt.stageX;
+            evt.target.y = evt.stageY;
+
+            needUpdate = true;
+            // Check out the DragAndDrop example in GitHub for more
+            // console.log(event);
+        }
     };
 
-    // Add to stage
-    stage.addChild(barContainer);
+    createjs.Touch.enable(stage);
 
     modifiersBar = [barContainer, modifiersNumber];
 }
