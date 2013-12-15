@@ -444,8 +444,6 @@ function addModifiersBar (x, y, modifiersNumber) {
     	stage.addChild(modifiersBitmap);
 
         // modifiersBitmap.addEventListener("mousemove", handleMove);
-        modifiersBitmap.addEventListener("pressmove", handleMove);
-        modifiersBitmap.addEventListener("mouseup", handleUp);
         function handleMove(evt) {
             evt.target.x = evt.stageX;
             evt.target.y = evt.stageY;
@@ -457,6 +455,8 @@ function addModifiersBar (x, y, modifiersNumber) {
         function handleUp (evt) {
             console.log("up");
         }
+        modifiersBitmap.addEventListener("pressmove", handleMove);
+        modifiersBitmap.addEventListener("mouseup", handleUp);
     };
 
     createjs.Touch.enable(stage);
