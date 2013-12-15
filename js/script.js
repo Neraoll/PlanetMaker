@@ -66,6 +66,8 @@ function gameInit () {
     // Set assets
     assets = [
             {src:"assets/fond.png", id:"bg"},
+            {src:"assets/ring-bg.png", id:"ringBg"},
+            {src:"assets/ring-fg.png", id:"ringFg"},
             {src:"assets/icon1.png", id:"mass"},
             {src:"assets/icon2.png", id:"aqua"},
             {src:"assets/icon3.png", id:"vege"},
@@ -108,8 +110,18 @@ function initUI () {
     var backgroundBitmap = new createjs.Bitmap(preloader.getResult("bg"));
     stage.addChild(backgroundBitmap);
 
+    var bringBgBitmap = new createjs.Bitmap(preloader.getResult("ringBg"));
+    bringBgBitmap.x = 187;
+    bringBgBitmap.y = 219;
+    stage.addChild(bringBgBitmap);
+
     // Add planet
-    addPlanet(400, 330, planetColor, atmoColor, 200, 80);
+    addPlanet(400, 330, planetColor, atmoColor, 140, 80);
+
+    var bringFgBitmap = new createjs.Bitmap(preloader.getResult("ringFg"));
+    bringFgBitmap.x = 188;
+    bringFgBitmap.y = 221;
+    stage.addChild(bringFgBitmap);
 
     // Place UI Elements
 
