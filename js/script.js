@@ -194,6 +194,7 @@ function fireScore () {
     } else {
         scoreLbl.visible = true;
         scoreLbl.alpha = 0.0;
+        scoreLbl.text = score + "%";
     };
 
     animations.push(animationWith(function alpha () {
@@ -220,11 +221,13 @@ function computeScore () {
 
     // Play music
     if (score > 0) {
-        playMusic("scorePos", false);
+        playMusic("scorePos", false, 0.8, false);
+        musicPlayer.setVolume(1.0);
     } else {
-        playMusic("scoreNeg", false);
+        playMusic("scoreNeg", false, 0.8, false);
+        musicPlayer.setVolume(1.0);
     };
-        setTimeout(fireScore, 1000);
+    setTimeout(fireScore, 1000);
 }
 
 function barIndexForId (barId) {
@@ -491,7 +494,7 @@ function generateName(tData, minChar){
 
 function initSound () {
     if (!musicPlayer) {
-        playMusic("musicMenu", true);
+        playMusic("musicMenu", true, 0.2, true);
     };
 
     // musicPlayer = createjs.Sound.play("music1");
@@ -949,12 +952,21 @@ function addCircle (x, y, color, value, maxValue) {
 }
 
 // Musics/Sound
-function playMusic (name, loop) {
+function playMusic (name, loop, volume, fadeIn) {
     if (musicPlayer) {
         musicPlayer.stop();
     };
 
     musicPlayer = createjs.Sound.play(name);
+    if (fadeIn) {
+        musicPlayer.setVolume(0);
+        animations.push(animationWith(function handle () {
+            musicPlayer.setVolume(musicPlayer.getVolume() + 0.01);
+        }, volume / 0.01))
+    } else {
+        musicPlayer.setVolume(volume);
+    };
+    
     if (loop) {
         function playAgain(event) {
            musicPlayer.play();
@@ -962,7 +974,7 @@ function playMusic (name, loop) {
         musicPlayer.addEventListener("complete", playAgain);
     };
 
-    musicPlayer.setVolume(0.2);
+    // musicPlayer.setVolume(0.2);
 }
 
 function playSound (name) {
@@ -976,5 +988,5 @@ function playSound (name) {
 
 function playGameMusic () {
     var rand = Math.floor(Math.random()*3) + 1;
-    playMusic("music" + rand,true);
+    playMusic("music" + rand, true, 0.2, true);
 }
