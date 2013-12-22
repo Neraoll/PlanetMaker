@@ -115,13 +115,6 @@ function gameInit () {
             {src:"assets/raceTest-4.png", id:"raceTest4"},
             {src:"assets/raceTest-5.png", id:"raceTest5"},
             {src:"js/data.json", id:"data"},
-            // {src:"paddle.png", id:"cpu"},
-            // {src:"paddle.png", id:"player"},
-            // {src:"ball.png", id:"ball"},
-            // {src:"win.png", id:"win"},
-            // {src:"lose.png", id:"lose"},
-            // {src:"playerScore.mp3|playerScore.ogg", id:"playerScore"},
-            // {src:"enemyScore.mp3|enemyScore.ogg", id:"enemyScore"},
             {src:"SD/TantumLocus_Music_Menu.mp3|SD/TantumLocus_Music_Menu.ogg", id:"musicMenu"},
             {src:"SD/TantumLocus_Music1.mp3|SD/TantumLocus_Music1.ogg", id:"music1"},
             {src:"SD/TantumLocus_Music2.mp3|SD/TantumLocus_Music2.ogg", id:"music2"},
@@ -132,6 +125,14 @@ function gameInit () {
             {src:"SD/Score_Pos.mp3|SD/Score_Pos.ogg", id:"scorePos"},
             // {src:"wall.mp3|wall.ogg", id:"wall"}
     ];
+
+    for(var i=1 ; i <= 4 ; i++)
+    {
+        for(var j=1 ; j <= 6 ; j++)
+        {
+            assets.push({src:"assets/races/race"+i+"_0"+j+".png", id:"race"+i+"_0"+j}); 
+        }
+    }
 
     // Create Progress label
     progressLbl = new createjs.Text("Loading...","18px Verdana","black");
@@ -323,6 +324,10 @@ function restartGame () {
     raceContainer.removeAllChildren();
     addRace();
 
+    //Nouvelle planète
+    newPlanet();
+    setPlanetState();
+
     playGameMusic();
     needUpdate = true;
 }
@@ -331,6 +336,8 @@ function initUI () {
     // Add background
     var backgroundBitmap = new createjs.Bitmap(preloader.getResult("bg"));
     stage.addChild(backgroundBitmap);
+
+    newPlanet();
 
     // Add planet
     addPlanet(400, 330, planetColor, atmoColor, 150, 80);
@@ -458,19 +465,46 @@ function animationWith (handler, count) {
 }
 
 function addRace(){
+    /*
     var rand = Math.floor(Math.random()*racesNumber); 
     var raceTestBitmap = new createjs.Bitmap(preloader.getResult("raceTest"+rand));
     raceTestBitmap.x = 15;
     raceTestBitmap.y = 380;
     raceContainer.addChild(raceTestBitmap);
+    */
+
+    var rand = Math.ceil(Math.random()*racesNumber); 
+    var raceTestBitmap = new createjs.Bitmap(preloader.getResult("race3_0"+rand));
+    raceTestBitmap.x = 15;
+    raceTestBitmap.y = 400;
+    raceContainer.addChild(raceTestBitmap);
+
+    var rand = Math.ceil(Math.random()*racesNumber); 
+    var raceTestBitmap = new createjs.Bitmap(preloader.getResult("race4_0"+rand));
+    raceTestBitmap.x = 30;
+    raceTestBitmap.y = 415;
+    raceContainer.addChild(raceTestBitmap);
+
+    var rand = Math.ceil(Math.random()*racesNumber); 
+    var raceTestBitmap = new createjs.Bitmap(preloader.getResult("race2_0"+rand));
+    raceTestBitmap.x = 30;
+    raceTestBitmap.y = 345;
+    raceContainer.addChild(raceTestBitmap);
+
+    var rand = Math.ceil(Math.random()*racesNumber); 
+    var raceTestBitmap = new createjs.Bitmap(preloader.getResult("race1_0"+rand));
+    raceTestBitmap.x = 75;
+    raceTestBitmap.y = 385;
+    raceContainer.addChild(raceTestBitmap);
+
 
     rName = generateName(raceData, 2);
 
     raceName = new createjs.Text(rName,"15px Verdana",bgUiColor);
     raceName.lineWidth = 110;
     raceName.textAlign = "center";
-    raceName.x = 70;
-    raceName.y = 360;
+    raceName.x = 85;
+    raceName.y = 340;
     raceContainer.addChild(raceName);
 
     //New value
@@ -792,9 +826,24 @@ function addModifiersBar (x, y, modifiersNumber) {
     modifiersBar = [barContainer, modifiersNumber];
 }
 
+function newPlanet()
+{
+    //Nouvelle planête
+    gameData.planet.startValue.mass = 10 + Math.floor(Math.random()*80);
+    gameData.planet.startValue.temp = 10 + Math.floor(Math.random()*80);
+    gameData.planet.startValue.vege = 10 + Math.floor(Math.random()*80);
+    gameData.planet.startValue.aqua = 10 + Math.floor(Math.random()*80);
+
+    gameData.planet.currentValue.mass = gameData.planet.startValue.mass;
+    gameData.planet.currentValue.temp = gameData.planet.startValue.temp;
+    gameData.planet.currentValue.vege = gameData.planet.startValue.vege;
+    gameData.planet.currentValue.aqua = gameData.planet.startValue.aqua;
+}
+
 // Planet Methods
 function addPlanet (x, y, outerColor, innerColor, outerRadius, innerRadius) {
-	// Create container
+
+    // Create container
  	planetContainer = new createjs.Container();
  	planetContainer.x = 0;
     planetContainer.y = 0;
@@ -874,6 +923,7 @@ function addPlanet (x, y, outerColor, innerColor, outerRadius, innerRadius) {
 }
 
 function setPlanetState () {
+
     var blueRadius = 50 + (75 * bars[0][2] / 100);
     setPlanetInner(aquaColor, blueRadius);
 
