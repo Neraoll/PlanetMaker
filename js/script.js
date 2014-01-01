@@ -7,6 +7,7 @@ var needUpdate = false;
 var preloader;
 var progressLbl;
 var gameLoaded = false;
+var playerWaitForLoading = false;
 
 // Assets
 var assets;
@@ -62,6 +63,7 @@ var planetInnerGreenValue;
 
 // Sound
 var musicPlayer;
+var musicPlayerLoopInterval;
 var soundPlayer;
 
 // Circles
@@ -94,6 +96,7 @@ function gameInit () {
     stage.mouseEventsEnabled = true;
 
     // Set assets
+    createjs.Sound.alternateExtensions = ["mp3"];
     assets = [
             {src:"assets/fond.png", id:"bg"},
             {src:"assets/ring-bg.png", id:"ringBg"},
@@ -115,15 +118,14 @@ function gameInit () {
             {src:"assets/raceTest-4.png", id:"raceTest4"},
             {src:"assets/raceTest-5.png", id:"raceTest5"},
             {src:"js/data.json", id:"data"},
-            {src:"SD/TantumLocus_Music_Menu.mp3|SD/TantumLocus_Music_Menu.ogg", id:"musicMenu"},
-            {src:"SD/TantumLocus_Music1.mp3|SD/TantumLocus_Music1.ogg", id:"music1"},
-            {src:"SD/TantumLocus_Music2.mp3|SD/TantumLocus_Music2.ogg", id:"music2"},
-            {src:"SD/TantumLocus_Music3.mp3|SD/TantumLocus_Music3.ogg", id:"music3"},
-            {src:"SD/Tic1.mp3|SD/Tic1.ogg", id:"tic1"},
-            {src:"SD/Tic2.mp3|SD/Tic2.ogg", id:"tic2"},
-            {src:"SD/Score_Neg.mp3|SD/Score_Neg.ogg", id:"scoreNeg"},
-            {src:"SD/Score_Pos.mp3|SD/Score_Pos.ogg", id:"scorePos"},
-            // {src:"wall.mp3|wall.ogg", id:"wall"}
+            {src:"SD/TantumLocus_Music_Menu.ogg", id:"musicMenu"},
+            {src:"SD/TantumLocus_Music1.ogg", id:"music1"},
+            {src:"SD/TantumLocus_Music2.ogg", id:"music2"},
+            {src:"SD/TantumLocus_Music3.ogg", id:"music3"},
+            {src:"SD/Tic1.ogg", id:"tic1"},
+            {src:"SD/Tic2.ogg", id:"tic2"},
+            {src:"SD/Score_Neg.ogg", id:"scoreNeg"},
+            {src:"SD/Score_Pos.ogg", id:"scorePos"},
     ];
 
     for(var i=1 ; i <= 4 ; i++)
@@ -297,6 +299,14 @@ function dropModifier (place, modifier) {
     needUpdate = true;
 }
 
+function startGame () {
+    playerWaitForLoading = true;
+
+    if (gameLoaded) {
+        playGameMusic();
+    };
+}
+
 function restartGame () {
     // Mass
     setBarValue(0, planet.startValue.mass);
@@ -457,11 +467,15 @@ function initUI () {
 
     setPlanetState();
 
+    if (playerWaitForLoading) {
+        playGameMusic();
+    };
+
     gameLoaded = true;
 }
 
-function animationWith (handler, count) {
-    return {handler: handler, count: count};
+function animationWith (handler, count, endHandler) {
+    return {handler: handler, count: count, endHandler: endHandler};
 }
 
 function addRace(){
@@ -558,19 +572,19 @@ function handleComplete(event) {
 function gameTick () {
 	if (gameLoaded) {
         var len = animations.length;
-        var toRemove = [];
-		for (var i = 0; i < len; i++) {
+
+        // Make a "reverse" for to be able to remove element in the loop
+		for (var i = len - 1; i >= 0; i--) {
 			animations[i].handler()
             animations[i].count--;
 
             if (animations[i].count <= 0) {
-                toRemove.push(i);
+                if (animations[i].endHandler !== undefined) {
+                    animations[i].endHandler();
+                }
+                animations.splice(i, 1);
             };
 		};
-
-        for (var i = 0; i < toRemove.length; i++) {
-            animations.splice(toRemove[i],1);
-        };
 
         if (len > 0) {
             needUpdate = true;
@@ -1002,29 +1016,36 @@ function addCircle (x, y, color, value, maxValue) {
 }
 
 // Musics/Sound
+function createPlayerWith (name, loop, volume) {
+    // body...
+}
 function playMusic (name, loop, volume, fadeIn) {
     if (musicPlayer) {
-        musicPlayer.stop();
-    };
-
-    musicPlayer = createjs.Sound.play(name);
-    if (fadeIn) {
-        musicPlayer.setVolume(0);
-        animations.push(animationWith(function handle () {
-            musicPlayer.setVolume(musicPlayer.getVolume() + 0.01);
-        }, volume / 0.01))
+        fadeMusicINOUT(name, volume);
+        // musicPlayer.stop();
     } else {
-        musicPlayer.setVolume(volume);
-    };
+        musicPlayer = createjs.Sound.play(name);
+        if (fadeIn) {
+            musicPlayer.setVolume(0);
+            animations.push(animationWith(function handle () {
+                musicPlayer.setVolume(musicPlayer.getVolume() + 0.01);
+            }, volume / 0.01))
+        } else {
+            musicPlayer.setVolume(volume);
+        };
+    }
     
     if (loop) {
-        function playAgain(event) {
-           musicPlayer.play();
-        }
-        musicPlayer.addEventListener("complete", playAgain);
-    };
+        if (musicPlayerLoopInterval) {
+            clearInterval(musicPlayerLoopInterval);
+        };
 
-    // musicPlayer.setVolume(0.2);
+        function playAgain(event) {
+            console.log("loop");
+            fadeMusicINOUT(musicPlayer.src, musicPlayer.getVolume());
+        }
+        musicPlayerLoopInterval = setInterval(playAgain, musicPlayer.getDuration() - 500)
+    };
 }
 
 function playSound (name) {
@@ -1034,6 +1055,23 @@ function playSound (name) {
 
     soundPlayer = createjs.Sound.play(name);
     soundPlayer.setVolume(1.0);
+}
+
+function fadeMusicINOUT (newMusic, volume) {
+    var delta = volume / 12;
+
+    var oldPlayer = musicPlayer;
+
+    musicPlayer = createjs.Sound.play(newMusic);
+    musicPlayer.setVolume(0);
+
+    animations.push(animationWith(function handle () {
+        oldPlayer.setVolume(oldPlayer.getVolume() - delta);
+    }, 12));
+
+    animations.push(animationWith(function handle () {
+        musicPlayer.setVolume(musicPlayer.getVolume() + delta);
+    }, 12));
 }
 
 function playGameMusic () {
