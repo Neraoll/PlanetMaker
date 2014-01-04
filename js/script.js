@@ -718,16 +718,27 @@ function setBarValue (index, value) {
     if (value > bars[index][1]) { value = bars[index][1]; };
     
 	var newWidth = value * (barWidth / bars[index][1]);
-	bars[index][0].getChildAt(1).scaleX = newWidth / barWidth;
     bars[index][2] = value;
-	// TODO animations
+	
+    // Animation
+    var barShape = bars[index][0].getChildAt(1);
+    var delta = (newWidth / barWidth) - barShape.scaleX;
+    function animation () {
+        barShape.scaleX += delta / 30;
+    }
+    addAnimation("BarValue" + index, animationWith(animation, 30)); // with 30fps the animation time is 1.5 sec
 }
 
 function setBarBestValue (index, value) {
 	var newX = value * (barWidth / bars[index][1]);
-	bars[index][0].getChildAt(2).x = bars[index][0].getChildAt(1).x + newX;
 
-	// TODO animations
+    // Animation
+	var barShape = bars[index][0].getChildAt(2);
+    var delta = (bars[index][0].getChildAt(1).x + newX) - barShape.x;
+    function animation () {
+        barShape.x += delta;
+    }
+    addAnimation("BarBestValue" + index, animationWith(animation, 30));
 }
 
 // Counter Bar
@@ -1162,7 +1173,7 @@ function setPlanetOuterSelected (selected) {
 
 // Animations
 function animationWith (handler, count, endHandler) {
-    return {handler: handler, count: count, endHandler: endHandler};
+    return {handler: handler, count: count ? count : 1, endHandler: endHandler};
 }
 
 // Add/Repalce animation in the dictionary. Each animation use a key to avoid conflict, and to be able to remove it easly.
