@@ -1,4 +1,8 @@
 {
+	"texts": {
+		"tutorial":"Tutorial\n\nYou know what to do.",
+		"tutorialClose":"Click to hide"
+	},
 	"race": [
 		"go",
 		"min",

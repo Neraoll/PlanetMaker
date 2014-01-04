@@ -8,7 +8,7 @@ var animations = new Object();
 var preloader;
 var progressLbl;
 var gameLoaded = false;
-var playerWaitForLoading = false;
+var waitingForLoading = false;
 
 // Assets
 var assets;
@@ -22,13 +22,18 @@ var vegeColor = "#33CC8E";
 var brunColor = "#E8D0AA";
 var counterColor = "#588293";
 var planetColor = "#EDEDED";
-var atmoColor = "#rgb(237, 237, 237)";
+var atmoColor = "rgb(237, 237, 237)";
+var tutorialBgColor = "rgb(32, 104, 132)";
+var tutorialTextColor = "white";
 
 // Key codes
 var KEYCODE_M = 77;
 
 // Dynamic key events
 var keyEvents = [];
+
+// Tutorial Dialog
+var tutorialDialogContainer;
 
 // Bars
 var barWidth = 330;
@@ -80,6 +85,7 @@ var circles = [];
 
 // Game data
 var data;
+var textData;
 var raceData;
 var planetData;
 var gameData;
@@ -92,6 +98,7 @@ var links;
 
 // Game state
 var waitingForRestart = false;
+var waitingForTutorial = false;
 
 function gameInit () {
 	// Get canvas
@@ -122,12 +129,6 @@ function gameInit () {
             {src:"assets/modifier-3.png", id:"modifier3"},
             {src:"assets/modifier-4.png", id:"modifier4"},
             {src:"assets/modifier-5.png", id:"modifier5"},
-            {src:"assets/raceTest-0.png", id:"raceTest0"},
-            {src:"assets/raceTest-1.png", id:"raceTest1"},
-            {src:"assets/raceTest-2.png", id:"raceTest2"},
-            {src:"assets/raceTest-3.png", id:"raceTest3"},
-            {src:"assets/raceTest-4.png", id:"raceTest4"},
-            {src:"assets/raceTest-5.png", id:"raceTest5"},
             {src:"assets/sound-on.png", id:"soundBtnOn"},
             {src:"assets/sound-off.png", id:"soundBtnOff"},
             {src:"js/data.json", id:"data"},
@@ -171,6 +172,7 @@ function gameInit () {
 
 function initData () {
     data = preloader.getResult("data");
+    textData = data.texts;
     raceData = data.race;
     planetData = data.planet;
     gameData = data.game;
@@ -314,7 +316,7 @@ function dropModifier (place, modifier) {
 }
 
 function startGame () {
-    playerWaitForLoading = true;
+    waitingForLoading = true;
 
     if (gameLoaded) {
         playGameMusic();
@@ -448,6 +450,12 @@ function initUI () {
             restartGame();
             return;
         };
+
+        if (waitingForTutorial && waitingForLoading) {
+            hideTutorial();
+            return;
+        };
+
         if (draggedModifier) {
             // Detect collision
             // Fix detection (change for center pos)
@@ -511,22 +519,17 @@ function initUI () {
 
     setPlanetState();
 
-    if (playerWaitForLoading) {
+    if (waitingForLoading) {
         playGameMusic();
     };
+
+    // Show tutorial
+    showTutorial();
 
     gameLoaded = true;
 }
 
-function addRace(){
-    /*
-    var rand = Math.floor(Math.random()*racesNumber); 
-    var raceTestBitmap = new createjs.Bitmap(preloader.getResult("raceTest"+rand));
-    raceTestBitmap.x = 15;
-    raceTestBitmap.y = 380;
-    raceContainer.addChild(raceTestBitmap);
-    */
-
+function addRace () {
     var rand = Math.ceil(Math.random()*racesNumber); 
     var raceTestBitmap = new createjs.Bitmap(preloader.getResult("race3_0"+rand));
     raceTestBitmap.x = 15;
@@ -731,7 +734,7 @@ function setBarValue (index, value) {
     function animation () {
         barShape.scaleX += delta / 30;
     }
-    addAnimation("BarValue" + index, animationWith(animation, 30)); // with 30fps the animation time is 1.5 sec
+    addAnimation("BarValue" + index, animationWith(animation, 30)); // with 30fps the animation time is 1 sec
 }
 
 function setBarBestValue (index, value) {
@@ -873,9 +876,8 @@ function addModifiersBar (x, y, modifiersNumber) {
 
         modifiersBtns.push(modifiersBitmap);
 
-        // modifiersBitmap.addEventListener("mousemove", handleMove);
         function handleMove(evt) {
-            if (waitingForRestart) {return;};
+            if (waitingForRestart || waitingForTutorial) {return;};
 
             if (!draggedModifier) {
                 var modifierIdx = modifiersBtns.indexOf(evt.target);
@@ -1179,6 +1181,66 @@ function setPlanetOuterSelected (selected) {
     planetOuter.scaleY = newScale;
 
     outerSelected = selected;
+}
+
+function showTutorial (argument) {
+    waitingForTutorial = true;
+
+    // Create dialog container
+    tutorialDialogContainer = new createjs.Container();
+    tutorialDialogContainer.x = 250;
+    tutorialDialogContainer.y = 125;
+    tutorialDialogContainer.alpha = 0.0;
+
+    // Create dialog shape
+    var dialogBackground = new createjs.Shape();
+    dialogBackground.graphics.beginStroke(bgUiColor).drawRect(0, 0, 300, 300);
+    dialogBackground.graphics.beginFill(tutorialBgColor).drawRect(0, 0, 300, 300);
+
+    dialogBackground.alpha = 0.9;
+
+    // Add shape
+    tutorialDialogContainer.addChild(dialogBackground);
+
+    // Create labels
+    var tutorialLbl = new createjs.Text(textData.tutorial, "18px Verdana", tutorialTextColor);
+    tutorialLbl.lineWidth = 300;
+    tutorialLbl.textAlign = "center";
+    tutorialLbl.x = 150;
+    tutorialLbl.y = 10;
+
+    var tutorialCloseLbl = new createjs.Text(textData.tutorialClose, "18px Verdana", tutorialTextColor);
+    tutorialCloseLbl.lineWidth = 300;
+    tutorialCloseLbl.textAlign = "center";
+    tutorialCloseLbl.x = 150;
+    tutorialCloseLbl.y = 270;
+
+    // Add labels
+    tutorialDialogContainer.addChild(tutorialLbl);
+    tutorialDialogContainer.addChild(tutorialCloseLbl);
+
+    // Add container to stage
+    stage.addChild(tutorialDialogContainer)
+
+    // Animate showing
+    var delta = 1.0 / 14;
+    function animation () {
+        tutorialDialogContainer.alpha += delta;
+    }
+    addAnimation("TutorialShowing", animationWith(animation, 14));
+}
+
+function hideTutorial (argument) {
+    // Animate hiding
+    var delta = 1.0 / 14;
+    function animation () {
+        tutorialDialogContainer.alpha -= delta;
+    }
+    function animationEnd () {
+        waitingForTutorial = false;
+        stage.removeChild(tutorialDialogContainer);
+    }
+    addAnimation("TutorialHiding", animationWith(animation, 14, animationEnd));
 }
 
 // Animations
