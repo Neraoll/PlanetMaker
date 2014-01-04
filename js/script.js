@@ -2,6 +2,7 @@
 var canvas;
 var stage;
 var needUpdate = false;
+var animations = [];
 
 // Preload
 var preloader;
@@ -11,8 +12,6 @@ var playerWaitForLoading = false;
 
 // Assets
 var assets;
-
-var animations = [];
 
 // Colors
 var bgUiColor = "#EDEDED";
@@ -24,6 +23,12 @@ var brunColor = "#E8D0AA";
 var counterColor = "#588293";
 var planetColor = "#EDEDED";
 var atmoColor = "#rgb(237, 237, 237)";
+
+// Key codes
+var KEYCODE_M = 77;
+
+// Dynamic key events
+var keyEvents = [];
 
 // Bars
 var barWidth = 330;
@@ -44,7 +49,7 @@ var modifiersBarHeight = 262;
 var modifiersMaxNumber = 5;
 var modifiersBtns = [];
 var modifiersBar;
-var dragedModifier;
+var draggedModifier;
 
 // Race
 var raceContainer;
@@ -60,6 +65,9 @@ var planetInnerBrun;
 var planetInnerGreen;
 var planetInnerBrunValue;
 var planetInnerGreenValue;
+var planetSelectedScale = 1.05;
+var innerSelected = false;
+var outerSelected = false;
 
 // Sound
 var musicPlayer;
@@ -94,6 +102,9 @@ function gameInit () {
 
 	// Enable mouse events
     stage.mouseEventsEnabled = true;
+
+    // Enable mouse move event outside of the stage
+    stage.mouseMoveOutside = true;
 
     // Set assets
     createjs.Sound.alternateExtensions = ["mp3"];
@@ -298,6 +309,8 @@ function dropModifier (place, modifier) {
     // Plays sound
     playSound("tic2");
 
+    // Deselect
+
     needUpdate = true;
 }
 
@@ -342,6 +355,20 @@ function restartGame () {
 
     playGameMusic();
     needUpdate = true;
+}
+
+function handleKeyUp (e) {
+    //cross browser issues exist
+    if(!e){ var e = window.event; }
+
+    // Dynamic events
+    if (keyEvents[e.keyCode]) {
+        keyEvents[e.keyCode].handler();
+    };
+
+    // Constant event
+    switch(e.keyCode) {
+    }
 }
 
 function initUI () {
@@ -416,30 +443,37 @@ function initUI () {
             restartGame();
             return;
         };
-        if (dragedModifier) {
+        if (draggedModifier) {
             // Detect collision
             // Fix detection (change for center pos)
-            dragedModifier.sprite.x += (dragedModifier.sprite.getBounds().height / 2);
-            dragedModifier.sprite.y += (dragedModifier.sprite.getBounds().height / 2);
+            draggedModifier.sprite.x += (draggedModifier.sprite.getBounds().height / 2);
+            draggedModifier.sprite.y += (draggedModifier.sprite.getBounds().height / 2);
             // Planet
-            if (lineDistance(dragedModifier.sprite, planetInner) < planetInnerValue) {
+            if (lineDistance(draggedModifier.sprite, planetInner) < planetInnerValue) {
                 // console.log("inner");
-                dropModifier(planetInner, dragedModifier);
+                dropModifier(planetInner, draggedModifier);
             }
             // Atmosphere
-            else if (lineDistance(dragedModifier.sprite, planetOuter) < planetOuterValue) {
-                dropModifier(planetOuter, dragedModifier);
+            else if (lineDistance(draggedModifier.sprite, planetOuter) < planetOuterValue) {
+                dropModifier(planetOuter, draggedModifier);
             };
 
             // Remove modifier
-            stage.removeChild(dragedModifier.sprite);
-            dragedModifier = null;
+            stage.removeChild(draggedModifier.sprite);
+            draggedModifier = null;
+
+            // Deselect planet
+            setPlanetInnerSelected(false);
+            setPlanetOuterSelected(false);
 
             needUpdate = true;
         };
     }
-    canvas.addEventListener("mouseup", handleUp);
+    // We Don't do it on the canvas because the mouse can go outside of it
+    window.addEventListener("mouseup", handleUp);
 
+    // Add keyboard handling
+    window.onkeyup = handleKeyUp;
 
  	var val = 0;
     var vol = 1.0;
@@ -596,6 +630,13 @@ function gameTick () {
         };
 	};
 
+    // Check for visual feed back every 10 ticks
+    if (createjs.Ticker.getTicks(false) % 10 == 0) {
+        // Check for dragged modifier feedback
+        if (draggedModifier) {
+            checkForModifierMovement();
+        };
+    };
 
     if (needUpdate) {
         stage.update();
@@ -818,24 +859,22 @@ function addModifiersBar (x, y, modifiersNumber) {
         function handleMove(evt) {
             if (waitingForRestart) {return;};
 
-            if (!dragedModifier) {
+            if (!draggedModifier) {
                 var modifierIdx = modifiersBtns.indexOf(evt.target);
 
                 // Duplicate object
-                dragedModifier = new createjs.Bitmap(preloader.getResult("modifier" + modifierIdx));
-                dragedModifier = {sprite:dragedModifier, idx:modifierIdx};
-                stage.addChild(dragedModifier.sprite);
+                draggedModifier = new createjs.Bitmap(preloader.getResult("modifier" + modifierIdx));
+                draggedModifier = {sprite:draggedModifier, idx:modifierIdx};
+                stage.addChild(draggedModifier.sprite);
 
                 // Play sound
                 playSound("tic1");
             };
 
-            dragedModifier.sprite.x = evt.stageX - (dragedModifier.sprite.getBounds().height / 2);
-            dragedModifier.sprite.y = evt.stageY - (dragedModifier.sprite.getBounds().width / 2);
+            draggedModifier.sprite.x = evt.stageX - (draggedModifier.sprite.getBounds().height / 2);
+            draggedModifier.sprite.y = evt.stageY - (draggedModifier.sprite.getBounds().width / 2);
 
             needUpdate = true;
-
-            // Check out the DragAndDrop example in GitHub for more
         }
         modifiersBitmap.addEventListener("pressmove", handleMove);
     };
@@ -845,7 +884,35 @@ function addModifiersBar (x, y, modifiersNumber) {
     modifiersBar = [barContainer, modifiersNumber];
 }
 
-// Modifiers Bar
+// Handle feedback when modifiers move
+function checkForModifierMovement () {
+    if (!draggedModifier) {
+        return;
+    };
+
+    // Check for planet feedbacks
+    // Get center pos
+    var centerPos = {x:draggedModifier.sprite.x + (draggedModifier.sprite.getBounds().width / 2), y:draggedModifier.sprite.y + (draggedModifier.sprite.getBounds().height / 2)}
+
+    // Planet
+    if (lineDistance(centerPos, planetInner) < planetInnerValue) {
+        setPlanetInnerSelected(true);
+        setPlanetOuterSelected(false);
+        needUpdate = true;
+    }
+    // Atmosphere
+    else if (lineDistance(centerPos, planetOuter) < planetOuterValue) {
+        setPlanetInnerSelected(false);
+        setPlanetOuterSelected(true);
+        needUpdate = true;
+    } else if (innerSelected || outerSelected) {
+        setPlanetInnerSelected(false);
+        setPlanetOuterSelected(false);
+        needUpdate = true;
+    };
+}
+
+// Sound Button
 function addSoundButton (x, y) {
     // Create container
     var btnContainer = new createjs.Container();
@@ -876,8 +943,6 @@ function addSoundButton (x, y) {
 
             // Un-mute all sound
             createjs.Sound.setMute(false);
-
-            needUpdate = true;
         } else {
             // Change visibility
             soundBtnOnBitmap.visible = false;
@@ -885,18 +950,20 @@ function addSoundButton (x, y) {
 
             // Mute all sound
             createjs.Sound.setMute(true);
-
-            needUpdate = true;
         };
+
+        needUpdate = true;
     }
     soundBtnContainer.addEventListener("click", handleClick);
+
+    // Add key events
+    keyEvents[KEYCODE_M] = {handler: handleClick};
 
     // Add to the container
     btnContainer.addChild(soundBtnContainer);
 
     // Add to stage
     stage.addChild(btnContainer);
-
 }
 
 function newPlanet()
@@ -1001,9 +1068,13 @@ function setPlanetState () {
     setPlanetInner(aquaColor, blueRadius);
 
     var brunRadius = blueRadius * (100 - bars[1][2]) / 100;
+    // Ensure that the inner border is always visible
+    brunRadius--;
     setPlanetInnerBrun(brunColor, brunRadius);
 
     var greenRadius = brunRadius * bars[3][2] / 100;
+    // Ensure that the inner border is always visible
+    greenRadius--;
     setPlanetInnerGreen(vegeColor, greenRadius);
 
     var atmoTemp = Math.round(120 + (117 * (100 - bars[2][2]) / 100));
@@ -1014,6 +1085,10 @@ function setPlanetOuter (outerColor, outerRadius) {
 	if (!planetOuter) {
 		return;
 	};
+
+    if (outerRadius < 0) {
+        outerRadius = 0;
+    };
 
 	planetOuter.graphics.clear();
 	planetOuter.graphics.beginStroke(outerColor).drawCircle(0, 0, outerRadius);
@@ -1026,6 +1101,10 @@ function setPlanetInner (innerColor, innerRadius) {
 		return;
 	};
 
+    if (innerRadius < 0) {
+        innerRadius = 0;
+    };
+
 	planetInner.graphics.clear();
 	planetInner.graphics.beginStroke(bgUiColor).drawCircle(0, 0, innerRadius);
 	planetInner.graphics.beginFill(innerColor).drawCircle(0, 0, innerRadius);
@@ -1035,6 +1114,10 @@ function setPlanetInner (innerColor, innerRadius) {
 function setPlanetInnerBrun (innerColor, innerRadius) {
     if (!planetInnerBrun) {
         return;
+    };
+
+    if (innerRadius < 0) {
+        innerRadius = 0;
     };
 
     planetInnerBrun.graphics.clear();
@@ -1048,36 +1131,39 @@ function setPlanetInnerGreen (innerColor, innerRadius) {
         return;
     };
 
+    if (innerRadius < 0) {
+        innerRadius = 0;
+    };
+
     planetInnerGreen.graphics.clear();
     planetInnerGreen.graphics.beginStroke(innerColor).drawCircle(0, 0, innerRadius);
     planetInnerGreen.graphics.beginFill(innerColor).drawCircle(0, 0, innerRadius);
     planetInnerGreenValue = innerRadius;
 }
 
-// Circles Methods, color is a css compatible color value
-function addCircle (x, y, color, value, maxValue) {
-    var circle = new createjs.Shape();
-    circle.graphics.beginFill(color).drawCircle(0, 0, circleRadius);
+function setPlanetInnerSelected (selected) {
+    var newScale = selected ? planetSelectedScale : 1.0;
 
-    //Set position of Shape instance.
-    circle.x = x;
-    circle.y = y;
+    planetInner.scaleX = newScale;
+    planetInner.scaleY = newScale;
+    planetInnerBrun.scaleX = newScale;
+    planetInnerBrun.scaleY = newScale;
+    planetInnerGreen.scaleX = newScale;
+    planetInnerGreen.scaleY = newScale;
 
-    //Add Shape instance to stage display list.
-    stage.addChild(circle);
+    innerSelected = selected;
+}
 
-    //Update stage will render next frame
-    stage.update();
+function setPlanetOuterSelected (selected) {
+    var newScale = selected ? planetSelectedScale : 1.0;
 
-    circles.push([circle, maxValue]);
+    planetOuter.scaleX = newScale;
+    planetOuter.scaleY = newScale;
 
-    return circles.length - 1;
+    outerSelected = selected;
 }
 
 // Musics/Sound
-function createPlayerWith (name, loop, volume) {
-    // body...
-}
 function playMusic (name, loop, volume, fadeIn) {
     if (musicPlayer) {
         fadeMusicINOUT(name, volume);
