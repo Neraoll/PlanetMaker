@@ -117,6 +117,8 @@ function gameInit () {
             {src:"assets/raceTest-3.png", id:"raceTest3"},
             {src:"assets/raceTest-4.png", id:"raceTest4"},
             {src:"assets/raceTest-5.png", id:"raceTest5"},
+            {src:"assets/sound-on.png", id:"soundBtnOn"},
+            {src:"assets/sound-off.png", id:"soundBtnOff"},
             {src:"js/data.json", id:"data"},
             {src:"SD/TantumLocus_Music_Menu.ogg", id:"musicMenu"},
             {src:"SD/TantumLocus_Music1.ogg", id:"music1"},
@@ -382,6 +384,9 @@ function initUI () {
     // Add modifiers bar
     addModifiersBar(705, 165, modifiersMaxNumber);
 
+    // Add Sound Button
+    addSoundButton(755, 505);
+    
     needUpdate = true;
 
  //    circle.addEventListener("mousedown", handlePress);
@@ -838,6 +843,60 @@ function addModifiersBar (x, y, modifiersNumber) {
     createjs.Touch.enable(stage);
 
     modifiersBar = [barContainer, modifiersNumber];
+}
+
+// Modifiers Bar
+function addSoundButton (x, y) {
+    // Create container
+    var btnContainer = new createjs.Container();
+    btnContainer.x = x;
+    btnContainer.y = y;
+
+    // Create sound button
+    var soundBtnContainer = new createjs.Container();
+    
+    // Get bitmaps
+    var soundBtnOnBitmap = new createjs.Bitmap(preloader.getResult("soundBtnOn"));
+    var soundBtnOffBitmap = new createjs.Bitmap(preloader.getResult("soundBtnOff"));
+    
+    // Add to the container
+    soundBtnContainer.addChild(soundBtnOffBitmap);
+    soundBtnContainer.addChild(soundBtnOnBitmap);
+
+    // Init visibility
+    soundBtnOnBitmap.visible = true;
+    soundBtnOffBitmap.visible = false;
+
+    // Handle click
+    function handleClick (event) {
+        if (createjs.Sound.getMute()) {
+            // Change visibility
+            soundBtnOnBitmap.visible = true;
+            soundBtnOffBitmap.visible = false;
+
+            // Un-mute all sound
+            createjs.Sound.setMute(false);
+
+            needUpdate = true;
+        } else {
+            // Change visibility
+            soundBtnOnBitmap.visible = false;
+            soundBtnOffBitmap.visible = true;
+
+            // Mute all sound
+            createjs.Sound.setMute(true);
+
+            needUpdate = true;
+        };
+    }
+    soundBtnContainer.addEventListener("click", handleClick);
+
+    // Add to the container
+    btnContainer.addChild(soundBtnContainer);
+
+    // Add to stage
+    stage.addChild(btnContainer);
+
 }
 
 function newPlanet()
