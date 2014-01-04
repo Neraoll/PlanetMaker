@@ -178,7 +178,6 @@ function initData () {
     race = gameData.race;
     modifiers = gameData.modifiers;
     links = data.links;
-    // console.log(gameData);
 }
 
 function lineDistance( point1, point2 )
@@ -323,19 +322,33 @@ function startGame () {
 }
 
 function restartGame () {
+    //Nouvelle race
+    raceContainer.removeAllChildren();
+    addRace();
+
+    //Nouvelle planète
+    newPlanet();
+
+    // Update UI
+    setPlanetState();
+
     // Mass
     setBarValue(0, planet.startValue.mass);
+    setBarBestValue(0, race.value.mass);
     
     // Aquatic
     setBarValue(1, planet.startValue.aqua);
+    setBarBestValue(1, race.value.aqua);
 
     // Temperature
     setBarValue(2, planet.startValue.temp);
+    setBarBestValue(2, race.value.temp);
 
     // Vegetation
     setBarValue(3, planet.startValue.vege);
+    setBarBestValue(3, race.value.vege);
 
-    // Add counter bar
+    // Reset counter bar value
     setCounterBarValue(0);
 
     scoreLbl.visible = false;
@@ -344,14 +357,6 @@ function restartGame () {
     planetContainer.alpha = 1.0;
 
     score = null;
-
-    //Nouvelle race
-    raceContainer.removeAllChildren();
-    addRace();
-
-    //Nouvelle planète
-    newPlanet();
-    setPlanetState();
 
     playGameMusic();
     needUpdate = true;
@@ -730,13 +735,18 @@ function setBarValue (index, value) {
 }
 
 function setBarBestValue (index, value) {
-	var newX = value * (barWidth / bars[index][1]);
+    if (!value) { value = 0};
+    if (value < 0) { value = 0; };
+    if (value > bars[index][1]) { value = bars[index][1]; };
+
+	var newX = bars[index][0].getChildAt(1).x + (value * (barWidth / bars[index][1]));
+    bars[index][4] = value;
 
     // Animation
 	var barShape = bars[index][0].getChildAt(2);
-    var delta = (bars[index][0].getChildAt(1).x + newX) - barShape.x;
+    var delta =  newX - barShape.x;
     function animation () {
-        barShape.x += delta;
+        barShape.x += delta / 30;
     }
     addAnimation("BarBestValue" + index, animationWith(animation, 30));
 }
