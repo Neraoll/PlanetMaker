@@ -2,7 +2,7 @@
 var canvas;
 var stage;
 var needUpdate = false;
-var animations = [];
+var animations = new Object();
 
 // Preload
 var preloader;
@@ -213,7 +213,7 @@ function fireScore () {
         scoreLbl.text = score + "%";
     };
 
-    animations.push(animationWith(function alpha () {
+    addAnimation("EndGameTransition", animationWith(function alpha () {
             planetContainer.alpha -= 0.06;
             scoreLbl.alpha += 0.06;
         }, 1.0 / 0.06));
@@ -513,10 +513,6 @@ function initUI () {
     gameLoaded = true;
 }
 
-function animationWith (handler, count, endHandler) {
-    return {handler: handler, count: count, endHandler: endHandler};
-}
-
 function addRace(){
     /*
     var rand = Math.floor(Math.random()*racesNumber); 
@@ -610,22 +606,23 @@ function handleComplete(event) {
 // Game tick
 function gameTick () {
 	if (gameLoaded) {
-        var len = animations.length;
+        var animationsCount = 0;
 
-        // Make a "reverse" for to be able to remove element in the loop
-		for (var i = len - 1; i >= 0; i--) {
-			animations[i].handler()
-            animations[i].count--;
+		for (var key in animations) {
+            animationsCount++;
 
-            if (animations[i].count <= 0) {
-                if (animations[i].endHandler !== undefined) {
-                    animations[i].endHandler();
+			animations[key].handler()
+            animations[key].count--;
+
+            if (animations[key].count <= 0) {
+                if (animations[key].endHandler) {
+                    animations[key].endHandler();
                 }
-                animations.splice(i, 1);
+                removeAnimation(key);
             };
 		};
 
-        if (len > 0) {
+        if (animationsCount > 0) {
             needUpdate = true;
         };
 	};
@@ -1163,6 +1160,29 @@ function setPlanetOuterSelected (selected) {
     outerSelected = selected;
 }
 
+// Animations
+function animationWith (handler, count, endHandler) {
+    return {handler: handler, count: count, endHandler: endHandler};
+}
+
+// Add/Repalce animation in the dictionary. Each animation use a key to avoid conflict, and to be able to remove it easly.
+function addAnimation (key, animation) {
+    if (!key) {
+        return;
+    };
+
+    animations[key] = animation;
+}
+
+function removeAnimation (key) {
+    if (!key) {
+        return;
+    };
+
+    animations[key] = null;
+    delete animations[key];
+}
+
 // Musics/Sound
 function playMusic (name, loop, volume, fadeIn) {
     if (musicPlayer) {
@@ -1172,7 +1192,7 @@ function playMusic (name, loop, volume, fadeIn) {
         musicPlayer = createjs.Sound.play(name);
         if (fadeIn) {
             musicPlayer.setVolume(0);
-            animations.push(animationWith(function handle () {
+            addAnimation("MusicFadeIn", animationWith(function handle () {
                 musicPlayer.setVolume(musicPlayer.getVolume() + 0.01);
             }, volume / 0.01))
         } else {
@@ -1210,11 +1230,11 @@ function fadeMusicINOUT (newMusic, volume) {
     musicPlayer = createjs.Sound.play(newMusic);
     musicPlayer.setVolume(0);
 
-    animations.push(animationWith(function handle () {
+    addAnimation("OldMusicFadeOut", animationWith(function handle () {
         oldPlayer.setVolume(oldPlayer.getVolume() - delta);
     }, 12));
 
-    animations.push(animationWith(function handle () {
+    addAnimation("NewMusicFadeIn", animationWith(function handle () {
         musicPlayer.setVolume(musicPlayer.getVolume() + delta);
     }, 12));
 }
