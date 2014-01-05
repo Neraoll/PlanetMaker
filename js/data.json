@@ -1,6 +1,6 @@
 {
 	"texts": {
-		"tutorial":"Tutorial\n\nYou know what to do.",
+		"tutorial":"Tutorial\n\nYou are a Planetary Engineer.\nA species (left) need your help to transform a planet (center).\n\nDrop 8 modifiers (right) on the crust or the atmosphere to modify their future home. Their needs are represented by the black lines on the gauges (top): be as close as possible to score!",
 		"tutorialClose":"Click to hide"
 	},
 	"race": [

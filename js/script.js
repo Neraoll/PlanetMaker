@@ -70,7 +70,7 @@ var planetInnerBrun;
 var planetInnerGreen;
 var planetInnerBrunValue;
 var planetInnerGreenValue;
-var planetSelectedScale = 1.05;
+var planetSelectedScale = 1.015;
 var innerSelected = false;
 var outerSelected = false;
 
@@ -636,7 +636,7 @@ function gameTick () {
 	};
 
     // Check for visual feed back every 10 ticks
-    if (createjs.Ticker.getTicks(false) % 10 == 0) {
+    if (createjs.Ticker.getTicks(false) % 3 == 0) {
         // Check for dragged modifier feedback
         if (draggedModifier) {
             checkForModifierMovement();
@@ -1223,16 +1223,16 @@ function showTutorial (argument) {
     stage.addChild(tutorialDialogContainer)
 
     // Animate showing
-    var delta = 1.0 / 14;
+    var delta = 1.0 / 8;
     function animation () {
         tutorialDialogContainer.alpha += delta;
     }
-    addAnimation("TutorialShowing", animationWith(animation, 14));
+    addAnimation("TutorialShowing", animationWith(animation, 8));
 }
 
 function hideTutorial (argument) {
     // Animate hiding
-    var delta = 1.0 / 14;
+    var delta = 1.0 / 8;
     function animation () {
         tutorialDialogContainer.alpha -= delta;
     }
@@ -1240,7 +1240,7 @@ function hideTutorial (argument) {
         waitingForTutorial = false;
         stage.removeChild(tutorialDialogContainer);
     }
-    addAnimation("TutorialHiding", animationWith(animation, 14, animationEnd));
+    addAnimation("TutorialHiding", animationWith(animation, 8, animationEnd));
 }
 
 // Animations
