@@ -1283,11 +1283,12 @@ function playMusic (name, loop, volume, fadeIn) {
         };
     }
     
+    // Clear previous loop
+    if (musicPlayerLoopInterval) {
+        clearInterval(musicPlayerLoopInterval);
+    };
+    
     if (loop) {
-        if (musicPlayerLoopInterval) {
-            clearInterval(musicPlayerLoopInterval);
-        };
-
         function playAgain(event) {
             console.log("loop");
             fadeMusicINOUT(musicPlayer.src, musicPlayer.getVolume());
