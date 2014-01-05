@@ -3,6 +3,7 @@ var canvas;
 var stage;
 var needUpdate = false;
 var animations = new Object();
+var disableUIEvent = false;
 
 // Preload
 var preloader;
@@ -215,26 +216,28 @@ function fireScore () {
     };
 
     addAnimation("EndGameTransition", animationWith(function alpha () {
-            planetContainer.alpha -= 0.06;
-            scoreLbl.alpha += 0.06;
-        }, 1.0 / 0.06));
+        planetContainer.alpha -= 0.06;
+        scoreLbl.alpha += 0.06;
+    }, 1.0 / 0.06, function end () {
+        waitingForRestart = true;
+    }));
 
     needUpdate = true;
 }
 
 function computeScore () {
-        waitingForRestart = true;
+    disableUIEvent = true;
 
-        score = 0;
-        for (var i = 0; i < bars.length; i++) {
-            // 100 - (abs(ValeurRaceDemandée - ValeurPlanèteActuelle) * 100 / abs(ValeurDemandéeRace - ValeurPlanèteDépart))
-            var barVal = bars[i][2];
-            var startVal =  bars[i][3];
-            var raceVal =  bars[i][4];
-            score += 100 - ((Math.abs(raceVal - barVal) * 100) / (Math.abs(raceVal - startVal) + 1));
-        };
-        score /= 4;
-        score = Math.ceil(score);
+    score = 0;
+    for (var i = 0; i < bars.length; i++) {
+        // 100 - (abs(ValeurRaceDemandée - ValeurPlanèteActuelle) * 100 / abs(ValeurDemandéeRace - ValeurPlanèteDépart))
+        var barVal = bars[i][2];
+        var startVal =  bars[i][3];
+        var raceVal =  bars[i][4];
+        score += 100 - ((Math.abs(raceVal - barVal) * 100) / (Math.abs(raceVal - startVal) + 1));
+    };
+    score /= 4;
+    score = Math.ceil(score);
 
     // Play music
     if (score > 0) {
@@ -448,6 +451,7 @@ function initUI () {
         if (waitingForRestart) {
             waitingForRestart = false;
             restartGame();
+            disableUIEvent = false;
             return;
         };
 
@@ -877,7 +881,7 @@ function addModifiersBar (x, y, modifiersNumber) {
         modifiersBtns.push(modifiersBitmap);
 
         function handleMove(evt) {
-            if (waitingForRestart || waitingForTutorial) {return;};
+            if (disableUIEvent) {return;};
 
             if (!draggedModifier) {
                 var modifierIdx = modifiersBtns.indexOf(evt.target);
@@ -1185,6 +1189,7 @@ function setPlanetOuterSelected (selected) {
 
 function showTutorial (argument) {
     waitingForTutorial = true;
+    disableUIEvent = true;
 
     // Create dialog container
     tutorialDialogContainer = new createjs.Container();
@@ -1204,13 +1209,13 @@ function showTutorial (argument) {
 
     // Create labels
     var tutorialLbl = new createjs.Text(textData.tutorial, "18px Verdana", tutorialTextColor);
-    tutorialLbl.lineWidth = 300;
+    tutorialLbl.lineWidth = 280;
     tutorialLbl.textAlign = "center";
     tutorialLbl.x = 150;
     tutorialLbl.y = 10;
 
     var tutorialCloseLbl = new createjs.Text(textData.tutorialClose, "18px Verdana", tutorialTextColor);
-    tutorialCloseLbl.lineWidth = 300;
+    tutorialCloseLbl.lineWidth = 280;
     tutorialCloseLbl.textAlign = "center";
     tutorialCloseLbl.x = 150;
     tutorialCloseLbl.y = 270;
@@ -1238,6 +1243,7 @@ function hideTutorial (argument) {
     }
     function animationEnd () {
         waitingForTutorial = false;
+        disableUIEvent = false;
         stage.removeChild(tutorialDialogContainer);
     }
     addAnimation("TutorialHiding", animationWith(animation, 8, animationEnd));
@@ -1260,6 +1266,13 @@ function addAnimation (key, animation) {
 function removeAnimation (key) {
     if (!key) {
         return;
+    };
+
+    // Handle animation not terminated
+    if (animations[key].count > 0) {
+        if (animations[key].endHandler) {
+            animations[key].endHandler();
+        }
     };
 
     animations[key] = null;
