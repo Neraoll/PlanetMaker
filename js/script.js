@@ -435,17 +435,6 @@ function initUI () {
  
  	// createjs.Touch.enable(stage);
 
- 	var ok = false;
-
- 	function handleClick(event) {
-        console.log(event);
-     	// Click Happened.
-     	gameLoaded = !gameLoaded;
-        // if (musicPlayer.isPlaying) {};
-                // musicPlayer.stop();
-
-    }
- 	// canvas.addEventListener("click", handleClick);
     // End drag
     function handleUp (argument) {
         if (waitingForRestart) {
@@ -1303,7 +1292,6 @@ function playMusic (name, loop, volume, fadeIn) {
     
     if (loop) {
         function playAgain(event) {
-            console.log("loop");
             fadeMusicINOUT(musicPlayer.src, musicPlayer.getVolume());
         }
         musicPlayerLoopInterval = setInterval(playAgain, musicPlayer.getDuration() - 500)
